@@ -167,21 +167,25 @@ export function getAsCSS( columns, attributes = {} ) {
 	return classes;
 }
 
-export function removeGridClasses( classes ) {
+export function removeGridClasses( classes, device ) {
 	if ( ! classes ) {
 		return classes;
 	}
 
-	return classes
-		.replace( /column\d-\w*-grid__\w*-\d*/g, '' )
-		.replace( /column\d-grid__\w*-\d*/g, '' )
-		.replace( /\s{2,}/, '' )
-		.replace( /wp-block-jetpack-layout-gutter__\w*/, '' )
-		.replace( /is-vertically-aligned-\w*/, '' )
-		.replace( /is-style-[A-Za-z-_]*/, '' )
-		.replace( /[dmt]-grid-[0-9]-[0-9]/, '' )
-		.replace( /[dmt]-row-[0-9]-[0-9]/, '' )
-		.replace( /are-vertically-aligned-\w*/ );
+	const deviceTypeId = device.charAt(0).toLowerCase();
+	const classString = String(classes); // ← Veiligstellen tegen arrays/undefined
+
+	return classString
+		.replace(/column\d-\w*-grid__\w*-\d*/g, '')
+		.replace(/column\d-grid__\w*-\d*/g, '')
+		.replace(/\s{2,}/, '')
+		.replace(/wp-block-jetpack-layout-gutter__\w*/, '')
+		.replace(/is-vertically-aligned-\w*/, '')
+		.replace(/is-style-[A-Za-z-_]*/, '')
+		.replace(new RegExp(`${deviceTypeId}-grid-\\d+-\\d+`, 'g'), '')
+		.replace(new RegExp(`${deviceTypeId}-row-\\d+-\\d+`, 'g'), '')
+		.replace(/are-vertically-aligned-\w*/)
+		.trim();
 }
 
 export function getGutterClasses( { gutterSize, addGutterEnds } ) {
@@ -217,4 +221,10 @@ export function getGridClassesForBlock(attributes, index = 0) {
 		classNames.push(`${prefix}-grid-${start}-${end}`);
 	});
 	return classNames.join(' ');
+}
+
+export function getStartEndFromClassName(className = '') {
+	
+	const match = className.match(/d-grid-(\d+)-(\d+)/);
+	return match ? { start: parseInt(match[1], 10), end: parseInt(match[2], 10) } : { start: 1, end: 12 };
 }

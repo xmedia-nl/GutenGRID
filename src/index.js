@@ -84,38 +84,5 @@ export function registerBlock() {
 		save: saveGrid,
 	} );
 
-	// registerBlockType( 'vwe/grid-column', {
-	// 	description: __(
-	// 		'A column used inside a Layout Grid block.',
-	// 		'layout-grid'
-	// 	),
-	// 	title: __( 'Column', 'layout-grid' ),
-	// 	icon: GridColumnIcon,
-	// 	category: 'design',
-	// 	parent: [ 'vwe/grid' ],
-	// 	supports: {
-	// 		inserter: false,
-	// 		reusable: false,
-	// 		html: false,
-	// 	},
-	// 	attributes: {
-	// 		backgroundColor: {
-	// 			type: 'string',
-	// 		},
-	// 		customBackgroundColor: {
-	// 			type: 'string',
-	// 		},
-	// 		padding: {
-	// 			type: 'string',
-	// 			default: 'none',
-	// 		},
-	// 		verticalAlignment: {
-	// 			type: 'string',
-	// 		},
-	// 	},
-	// 	edit: editColumn,
-	// 	save: saveColumn,
-	// 	deprecated,
-	// } );
 }
 registerBlock();

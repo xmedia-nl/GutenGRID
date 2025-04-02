@@ -29,6 +29,8 @@ import {
 import { __ } from '@wordpress/i18n';
 import { ENTER, SPACE } from '@wordpress/keycodes';
 import { compose } from '@wordpress/compose';
+import { detectBoGridPresence } from './utils/bo-grid-check';
+
 
 /**
  * Internal dependencies
@@ -52,6 +54,7 @@ import { getGridWidth, getDefaultSpan } from './grid-defaults';
 // import ResizeGrid from './resize-grid';
 import LayoutGrid from './layout-grid';
 import PreviewDevice from './preview-device';
+import { Notice } from '@wordpress/components';
 
 import {
 	withUpdateAlignment,
@@ -72,9 +75,13 @@ class Edit extends Component {
 		this.state = {
 			inspectorDeviceType: 'Desktop',
 			viewPort: 'Desktop',
+			hasBoGrid: true, // default = true
 		};
 	}
-
+	componentDidMount() {
+		const hasGrid = detectBoGridPresence();
+		this.setState({ hasBoGrid: hasGrid });
+	}
 	/*
 	 * Change the layout (number of columns), resetting everything to the default
 	 */
@@ -145,10 +152,10 @@ class Edit extends Component {
 
 	adjustGrid(grid) {
 		const { setAttributes, attributes } = this.props;
-
+		const device = this.getPreviewMode();
 		setAttributes({
 			...grid,
-			className: removeGridClasses(attributes.className),
+			className: removeGridClasses(attributes.className, device),
 		});
 	}
 
@@ -264,7 +271,7 @@ class Edit extends Component {
 		const { gutterSize, addGutterEnds, verticalAlignment } = attributes;
 		const layoutGrid = new LayoutGrid(attributes, previewMode, columns);
 		const classes = classnames(
-			removeGridClasses(className).replace(
+			removeGridClasses(className, previewMode).replace(
 				'layout-grid',
 				'layout-grid-editor'
 			),
@@ -346,15 +353,27 @@ class Edit extends Component {
 						})
 					}
 				/>
-		
+
 				<div className={classes} >
+					{!this.state.hasBoGrid && (
+						<Notice status="warning" isDismissible={false}>
+							<strong>{__('BO Grid missing', 'layout-grid')}</strong>
+							<p>
+								{__(
+									'This block requires the theme to implement a .bo-grid layout on the <main> element. Please ensure your theme supports BO Grid for correct layout behavior. A starter theme will be available soon.',
+									'layout-grid'
+								)}
+							</p>
+						</Notice>
+					)}
+
 					<InnerBlocks
 						template={null}
 						templateLock={false}
 						allowedBlocks={undefined}
 					/>
 				</div>
-		
+
 				<InspectorControls>
 					<PanelBody title={__('Layout', 'layout-grid')}>
 						<div className="vwe-grid-columns block-editor-block-styles">
@@ -392,7 +411,7 @@ class Edit extends Component {
 								</div>
 							))}
 						</div>
-		
+
 						<p className="vwe-grid-help">
 							{__(
 								'Changing the number of columns will reset your layout and could remove content.',
@@ -400,7 +419,7 @@ class Edit extends Component {
 							)}
 						</p>
 					</PanelBody>
-		
+
 					<PanelBody title={__('Responsive Breakpoints', 'layout-grid')}>
 						<p className="vwe-grid-help">
 							{__(
@@ -423,17 +442,17 @@ class Edit extends Component {
 								</Button>
 							))}
 						</ButtonGroup>
-		
+
 						{this.renderDeviceSettings(
 							columns,
 							inspectorDeviceType,
 							attributes
 						)}
 					</PanelBody>
-		
+
 					<PanelBody title={__('Gutter', 'layout-grid')}>
 						<p>{__('Gutter size', 'layout-grid')}</p>
-		
+
 						<SelectControl
 							value={gutterSize}
 							onChange={(newValue) =>
@@ -447,7 +466,7 @@ class Edit extends Component {
 							}
 							options={getGutterValues()}
 						/>
-		
+
 						{gutterSize === 'none' ? (
 							<Disabled>{toggleControl}</Disabled>
 						) : (
@@ -455,7 +474,7 @@ class Edit extends Component {
 						)}
 					</PanelBody>
 				</InspectorControls>
-		
+
 				<BlockControls>
 					<BlockVerticalAlignmentToolbar
 						onChange={updateAlignment}
@@ -464,7 +483,7 @@ class Edit extends Component {
 				</BlockControls>
 			</>
 		);
-		
+
 	}
 }
 
