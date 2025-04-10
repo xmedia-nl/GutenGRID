@@ -1,12 +1,275 @@
 
+/**************************** src/grid/components/grid-position-control.js ****************************/ 
+import { __experimentalNumberControl as NumberControl } from '@wordpress/components';
+import { useSelect, useDispatch } from '@wordpress/data';
+import { useEffect, useState } from '@wordpress/element';
+
+import {
+	getStartEndColFromClassName,
+	getStartEndRowFromClassName,
+	replaceColumnValuesInClass,
+	replaceRowValuesInClass
+} from '../css-classname';
+import { getGridWidth } from '../../grid/grid-defaults';
+
+const GridPositionControl = ({ clientId }) => {
+	const { className = '' } = useSelect((select) =>
+		select('core/block-editor').getBlockAttributes(clientId),
+		[clientId]
+	);
+
+	const device = useSelect((select) =>
+		select('core/edit-post')?.__experimentalGetPreviewDeviceType?.() || 'Desktop'
+	);
+
+	const { updateBlockAttributes } = useDispatch('core/block-editor');
+
+	const [colStart, setColStart] = useState('');
+	const [colEnd, setColEnd] = useState('');
+	const [rowStart, setRowStart] = useState('');
+	const [rowEnd, setRowEnd] = useState('');
+
+	// Initial values bij load of class/device change
+	useEffect(() => {
+		const { start: cs, end: ce } = getStartEndColFromClassName(className, device);
+        const { start: rs, end: re } = getStartEndRowFromClassName(className, device);
+
+		setColStart(cs || '');
+		setColEnd(ce || '');
+		setRowStart(rs || '');
+		setRowEnd(re || '');
+	}, [className, device]);
+
+	// Class updater
+	const updateColClass = (start, end) => {
+        const isValid = (val) => val === '' || (!isNaN(val) && Number(val) > 0);
+        if (!isValid(start) || !isValid(end)) return;
+    
+        const newClassName = replaceColumnValuesInClass(className, device, Number(start), Number(end));
+        updateBlockAttributes(clientId, { className: newClassName });
+    };
+
+	const updateRowClass = (start, end) => {
+        const isValid = (val) => val === '' || (!isNaN(val) && Number(val) > 0);
+        if (!isValid(start) || !isValid(end)) return;
+    
+        const newClassName = replaceRowValuesInClass(className, device, Number(start), Number(end));
+        updateBlockAttributes(clientId, { className: newClassName });
+    };
+
+	const colMax = getGridWidth(device);
+
+	return (
+		<div className="vwe-grid-controls">
+			<NumberControl
+				label="Column start"
+				value={colStart}
+				onChange={(value) => {
+					setColStart(value);
+					updateColClass(value, colEnd);
+				}}
+				min={1}
+				max={colMax}
+				placeholder="Auto"
+			/>
+			<NumberControl
+				label="Column end"
+				value={colEnd}
+				onChange={(value) => {
+					setColEnd(value);
+					updateColClass(colStart, value);
+				}}
+				min={1}
+				max={colMax + 1}
+				placeholder="Auto"
+			/>
+			<NumberControl
+				label="Row start"
+				value={rowStart}
+				onChange={(value) => {
+					setRowStart(value);
+					updateRowClass(value, rowEnd);
+				}}
+				min={1}
+				placeholder="Auto"
+			/>
+			<NumberControl
+				label="Row end"
+				value={rowEnd}
+				onChange={(value) => {
+					setRowEnd(value);
+					updateRowClass(rowStart, value);
+				}}
+				min={1}
+				placeholder="Auto"
+			/>
+		</div>
+	);
+};
+
+export default GridPositionControl;
+
+ 
+
+/**************************** src/grid/components/layout-preset-toolbar.js ****************************/ 
+import { ToolbarGroup, ToolbarButton } from '@wordpress/components';
+import { useSelect, useDispatch } from '@wordpress/data';
+import { __ } from '@wordpress/i18n';
+import { replaceColumnValuesInClass, getStartEndColFromClassName } from '../css-classname';
+import { HalfLeftIcon, FullCenterIcon, HalfRightIcon, } from '../../icons';
+
+
+const PRESETS = {
+    Desktop: {
+        left: [2, 8],
+        center: [2, 14],
+        right: [8, 14],
+    },
+    Tablet: {
+        left: [2, 8],
+        center: [2, 14],
+        right: [8, 14],
+    },
+    Mobile: {
+        left: [2, 6],
+        center: [2, 10],
+        right: [6, 10],
+    },
+};
+
+const LayoutPresetToolbar = ({ clientId }) => {
+    const { className = '' } = useSelect((select) =>
+        select('core/block-editor').getBlockAttributes(clientId),
+        [clientId]
+    );
+    const device = useSelect((select) =>
+        select('core/edit-post')?.__experimentalGetPreviewDeviceType?.() || 'Desktop'
+    );
+
+    const { updateBlockAttributes } = useDispatch('core/block-editor');
+
+    const applyPreset = (type) => {
+        const [start, end] = PRESETS[device][type];
+        const newClassName = replaceColumnValuesInClass(className, device, start, end);
+        updateBlockAttributes(clientId, { className: newClassName });
+    };
+    const currentMatches = (type) => {
+        const [expectedStart, expectedEnd] = PRESETS[device][type];
+        const { start, end } = getStartEndColFromClassName(className, device);
+        return start === expectedStart && end === expectedEnd;
+    };
+    return (
+        <ToolbarGroup label={__('Layout presets', 'layout-grid')}>
+            <ToolbarButton
+                icon={<HalfLeftIcon />}
+                label={__('Linkerhelft', 'layout-grid')}
+                onClick={() => applyPreset('left')}
+                isPressed={currentMatches('left')}
+            />
+            <ToolbarButton
+                icon={<FullCenterIcon />}
+                label={__('Midden', 'layout-grid')}
+                onClick={() => applyPreset('center')}
+                isPressed={currentMatches('center')}
+            />
+            <ToolbarButton
+                icon={<HalfRightIcon />}
+                label={__('Rechterhelft', 'layout-grid')}
+                onClick={() => applyPreset('right')}
+                isPressed={currentMatches('right')}
+            />
+        </ToolbarGroup>
+    );
+};
+
+export default LayoutPresetToolbar;
+
+ 
+
+/**************************** src/grid/filters/withGridPositionControl.js ****************************/ 
+import { createHigherOrderComponent } from '@wordpress/compose';
+import { useSelect, useDispatch } from '@wordpress/data';
+import { InspectorControls, BlockControls  } from '@wordpress/block-editor';
+import { PanelBody, TextControl, ButtonGroup, Button, } from '@wordpress/components';
+import GridPositionControl from '../components/grid-position-control';
+import { addFilter } from '@wordpress/hooks';
+// import {updateInspectorDevice, getInspectorMode} from '../../grid/edit.js';
+import { __ } from '@wordpress/i18n';
+import { getLayouts } from '../../constants';
+
+import LayoutPresetToolbar from '../components/layout-preset-toolbar';
+
+const withGridPositionControl = createHigherOrderComponent((BlockEdit) => (props) => {
+    const { clientId, name, isSelected } = props;
+
+    const parentIsGrid = useSelect((select) => {
+        const parentId = select('core/block-editor').getBlockRootClientId(clientId);
+        const parentBlock = select('core/block-editor').getBlock(parentId);
+        return parentBlock?.name === 'vwe/grid';
+    }, [clientId]);
+
+    const currentDevice = useSelect((select) => {
+        return (
+            select('core/edit-site')?.__experimentalGetPreviewDeviceType?.() ||
+            select('core/edit-post')?.__experimentalGetPreviewDeviceType?.() ||
+            'Desktop'
+        );
+    }, []);
+
+    const { __experimentalSetPreviewDeviceType: setDevice } =
+        useDispatch('core/edit-site') || useDispatch('core/edit-post');
+
+
+    if (!isSelected || !parentIsGrid) return <BlockEdit {...props} />;
+
+    return (
+        <>
+            <BlockControls>
+                <LayoutPresetToolbar clientId={clientId} />
+            </BlockControls>
+            <BlockEdit {...props} />
+            <InspectorControls>
+                <PanelBody title={__('Responsive Breakpoints', 'layout-grid')}>
+                    <p className="vwe-grid-help">
+                        {__(
+                            "Previewing your post will show your browser's breakpoint, not the currently selected one.",
+                            'layout-grid'
+                        )}
+                    </p>
+                    <ButtonGroup>
+                        {getLayouts().map((layout) => (
+                            <Button
+                                key={layout.value}
+                                isPrimary={layout.value === currentDevice}
+                                onClick={() => setDevice(layout.value)}
+                            >
+                                {layout.label}
+                            </Button>
+                        ))}
+                    </ButtonGroup>
+
+                </PanelBody>
+                <PanelBody title="Grid positie">
+                    <GridPositionControl clientId={clientId} />
+                </PanelBody>
+            </InspectorControls>
+        </>
+    );
+}, 'withGridPositionControl');
+
+// export default withGridPositionControl;
+addFilter(
+    'editor.BlockEdit',
+    'vwe/grid-position-controls',
+    withGridPositionControl
+);
+ 
+
 /**************************** src/grid/filters/withGridResizeHandles.js ****************************/ 
 import { addFilter } from '@wordpress/hooks';
 import { useSelect, useDispatch } from '@wordpress/data';
 import ResizeGridSingle from '../resize-grid-single';
-import { removeGridClasses } from '../css-classname'
-
-// import { getOffsetForDevice, getSpanForDevice} from '../../constants'
-
+import { removeColumnClasses, replaceColumnValuesInClass } from '../css-classname'
 
 
 
@@ -34,8 +297,10 @@ const withGridResizeHandles = (BlockListBlock) => (props) => {
 		<ResizeGridSingle
 			clientId={clientId}
 			gridWidth={12}
-			onResize={({ direction, delta, start, end, device = 'Desktop' }) => {
-				if (typeof start !== 'number' || typeof end !== 'number' || isNaN(delta)) return;
+			onResize={({ direction, start, end, device = 'Desktop' }) => {
+				if (typeof start !== 'number' || typeof end !== 'number') {
+					return;
+				}
 
 				const prefix = {
 					Desktop: 'd',
@@ -46,23 +311,20 @@ const withGridResizeHandles = (BlockListBlock) => (props) => {
 				let newStart = start;
 				let newEnd = end;
 
-				if (direction === 'left') {
-					newStart = Math.max(1, Math.min(end - 1, start + delta));
-				}
-				if (direction === 'right') {
-					newEnd = Math.min(12, Math.max(start + 1, end + delta));
-				}
-
 				// Fallback
-				if (newStart >= newEnd) return;
-
-				// want to know the type of attributes.className
-				console.log("attributes.className", attributes.className);
-				console.log(typeof attributes.className);
+				if (newStart >= newEnd) {
+					return;
+				}
 
 				const newGridClass = `${prefix}-grid-${newStart}-${newEnd}`;
-				const cleanClass = removeGridClasses(attributes.className || '', device);
-				const newClassName = `${cleanClass} ${newGridClass}`.trim();
+				// const cleanClass = removeColumnClasses(attributes.className || '', device);
+				// const newClassName = `${cleanClass} ${newGridClass}`.trim();
+				const newClassName = replaceColumnValuesInClass(
+					attributes.className || '',
+					device,
+					newStart,
+					newEnd
+				);
 
 				updateBlockAttributes(clientId, {
 					className: newClassName,
@@ -89,286 +351,21 @@ addFilter(
  * Internal dependencies
  */
 
-import {
-	getSpanForDevice,
-	getOffsetForDevice,
-} from '../../constants';
-import {
-	getGridWidth,
-	getGridMax,
-	getDefaultSpan,
-} from '../grid-defaults';
 
 /**
  * This contains all the grid column layout logic. That is, it knows how to move and resize columns on a grid (including a grid with multiple rows).
  * It does not handle mapping resize handles to grid positions
  */
-class LayoutGrid {
-	constructor( attributes, device, columns ) {
-		this.attributes = attributes;
-		this.device = device;
-		this.columnCount = columns;
-	}
+// class LayoutGrid {
+// 	constructor( attributes, device, columns ) {
+// 		this.attributes = attributes;
+// 		this.device = device;
+// 		this.columnCount = columns;
+// 	}
 
-	// Gets a copy of the grid so we can modify it
-	getGridValues() {
-		const grid = {};
+// }
 
-		for ( let pos = 0; pos < this.columnCount; pos++ ) {
-			const defaultSpan = getDefaultSpan( this.device, this.columnCount, pos );
-
-			grid[ getSpanForDevice( pos, this.device ) ] = this.getSpan( pos ) || defaultSpan;
-			grid[ getOffsetForDevice( pos, this.device ) ] = this.getOffset( pos );
-		}
-
-		return grid;
-	}
-
-	/*
-	 * Apply a set of adjustments and return a new copy of the grid
-	 */
-	applyAdjustments( adjustments ) {
-		let grid = this.getGridValues();
-
-		// Run through the adjustments and apply to the grid
-		for ( let index = 0; index < adjustments.length; index++ ) {
-			grid = { ...grid, ...adjustments[ index ] };
-		}
-
-		return grid;
-	}
-
-	getSpanAdjustment( column, value ) {
-		return { [ getSpanForDevice( column, this.device ) ]: value }
-	}
-
-	getAdjustOffset( column, value ) {
-		return { [ getOffsetForDevice( column, this.device ) ]: value }
-	}
-
-	getShrinkOffset( column, remaining ) {
-		const spareOffset = this.getOffset( column );
-		const offsetUsed = remaining >= spareOffset ? spareOffset : remaining;
-
-		return {
-			adjustment: this.getAdjustOffset( column, spareOffset - offsetUsed ),
-			offsetUsed,
-		};
-	}
-
-	hasOverlaps( positions ) {
-		for ( let index = 0; index < positions.length; index++ ) {
-			const first = positions[ index ];
-
-			for ( let inner = index + 1; inner < positions.length; inner++ ) {
-				const second = positions[ inner ];
-
-				if ( first.start > second.start && first.start < second.end ) {
-					return true;
-				}
-
-				if ( first.end > second.start && first.end < second.end ) {
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	/*
-	 * Determine if an adjusted grid is valid. That is, the total of all the spans and offsets does not exceed
-	 * the maximum allowed by the grid layout, and none of the columns overlap each other
-	 */
-	validateGrid( grid ) {
-		const positions = [];
-		const rowWidth = getGridWidth( this.device );
-		let total = 0, rowTotal = 0;
-
-		for ( let pos = 0; pos < this.columnCount; pos++ ) {
-			const span = grid[ getSpanForDevice( pos, this.device ) ];
-			const offset = grid[ getOffsetForDevice( pos, this.device ) ];
-
-			rowTotal += offset;
-			if ( rowTotal >= rowWidth ) {
-				rowTotal = rowTotal - rowWidth;
-			}
-
-			rowTotal += span;
-
-			// Does this row exceed the limit?
-			if ( rowTotal > rowWidth ) {
-				return false;
-			}
-
-			positions.push( { start: total + offset, end: total + offset + span } );
-
-			total += span + offset;
-		}
-
-		// Does it fit within the grid?
-		if ( total > getGridMax( this.device, this.columnCount ) ) {
-			return false;
-		}
-
-		// Do we have any overlaps?
-		if ( this.hasOverlaps( positions ) ) {
-			return false;
-		}
-
-		return true;
-	}
-
-	/*
-	 * The end of a column was adjusted. Absorb/increase any offsets in subsequent columns so they remain in place
-	 * Returns an array of column adjustments
-	 */
-	getEndAdjustments( column, diff ) {
-		const changes = [];
-
-		if ( diff < 0 ) {
-			// Column end has moved left - add extra offset to the next column to keep it in place
-			const adjustment = this.getAdjustOffset( column, this.getOffset( column ) + Math.abs( diff ) );
-
-			return [ adjustment ];
-		}
-
-		if ( diff > 0 ) {
-			// Column end has moved right - eat any offset space after the column
-			for ( let index = column; index < this.columnCount && diff > 0; index++ ) {
-				const adjust = this.getShrinkOffset( index, Math.abs( diff ) );
-
-				changes.push( adjust.adjustment );
-				diff -= adjust.offsetUsed;
-			}
-		}
-
-		return changes;
-	}
-
-	getStartMovedLeft( column, diff ) {
-		const changes = [];
-
-		// Column start has moved left - eat any offset space before the column, including the column's own offset
-		for ( let index = column; index >= 0 && diff > 0; index-- ) {
-			const adjust = this.getShrinkOffset( index, diff );
-
-			changes.push( adjust.adjustment );
-			diff -= adjust.offsetUsed;
-		}
-
-		return changes;
-	}
-
-	/*
-	 * The start of a column was adjusted. Make adjustments to other columns so everything remains in place
-	 * Returns an array of column adjustments
-	 */
-	getStartAdjustments( column, newStart ) {
-		const currentOffset = this.getOffset( column );
-		const newOffset = this.getOffsetFromStart( column, newStart );
-		const diff = newOffset - currentOffset;
-
-		if ( diff < 0 ) {
-			return this.getStartMovedLeft( column, Math.abs( diff ) );
-		}
-
-		return [ this.getAdjustOffset( column, newOffset ) ];
-	}
-
-	/*
-	 * Get span for a column
-	 */
-	getSpan( column ) {
-		return this.attributes[ getSpanForDevice( column, this.device ) ]
-	}
-
-	/*
-	 * Get offset from previous column
-	 */
-	getOffset( column ) {
-		return this.attributes[ getOffsetForDevice( column, this.device ) ]
-	}
-
-	/*
-	 * Get absolute start value for a column from the start of the row
-	 */
-	getStart( column ) {
-		let start = 0;
-
-		// Add all the offset and spans of previous columns
-		for ( let pos = 0; pos < column; pos++ ) {
-			start += this.getSpan( pos ) + this.getOffset( pos );
-		}
-
-		const rows = Math.max( 1, ( Math.floor( start / getGridWidth( this.device ) ) ) );
-
-		// Finally add the offset of our column to take us to the start of it, and then make it relative to the start of the row
-		return ( start + this.getOffset( column ) ) % ( rows * getGridWidth( this.device ) );
-	}
-
-	/*
-	 * Opposite of getStart() - returns an offset from the previous column when given a new start position
-	 */
-	getOffsetFromStart( column, start ) {
-		if ( column === 0 ) {
-			// Simple - the first column offset is the start position
-			return start;
-		}
-
-		const currentStart = this.getStart( column ); // This is the current start
-		const diff = start - currentStart;
-
-		return this.getOffset( column ) + diff;
-	}
-
-	convertOffsetToStart( column, offset ) {
-		const start = this.getStart( column );
-		const diff = offset - this.getOffset( column );
-
-		return start + diff;
-	}
-
-	/*
-	 * Returns the layout grid, with an adjustment made. If no adjustment is made then returns null
-	 */
-	getAdjustedGrid( column, adjustment ) {
-		const {
-			start = this.getStart( column ),
-			span = this.getSpan( column ),
-		} = adjustment;
-
-		// Get an array of adjustments so we can then check the grid is still valid before committing
-		let adjustments = [];
-
-		if ( start !== this.getStart( column ) && span !== this.getSpan( column ) ) {
-			// Both start and span have changed
-			adjustments = adjustments.concat( this.getStartAdjustments( column, start ) );
-			adjustments = adjustments.concat( this.getSpanAdjustment( column, span ) );
-		} else if ( span !== this.getSpan( column ) ) {
-			// Only span has changed. Adjust that, and any columns that come after this
-			adjustments = adjustments.concat( this.getSpanAdjustment( column, span ) );
-			adjustments = adjustments.concat( this.getEndAdjustments( column + 1, span - this.getSpan( column ) ) );
-		} else if ( start !== this.getStart( column ) ) {
-			// Only the start has changed. Adjust that, and ensure subsequent columns dont move
-			adjustments = adjustments.concat( this.getStartAdjustments( column, start ) );
-			adjustments = adjustments.concat( this.getEndAdjustments( column + 1, start - this.getStart( column ) ) );
-		}
-
-		// Convert the array of adjustments to a new set of attributes
-		const adjustedGrid = this.applyAdjustments( adjustments );
-
-		// Now check everything still fits. If it doesnt then we ignore the entire change
-		if ( adjustments.length > 0 && this.validateGrid( adjustedGrid ) ) {
-			// Update all the values at once
-			return adjustedGrid;
-		}
-
-		return null;
-	}
-}
-
-export default LayoutGrid;
+// export default LayoutGrid;
 
  
 
@@ -378,7 +375,9 @@ import classnames from 'classnames';
 // import ResizeHandle from '../resize-grid-single/resize-handle';
 import ResizeHandle from './resize-handle';
 import { useSelect } from '@wordpress/data';
-import { getStartEndFromClassName } from '../css-classname';
+import { getStartEndColFromClassName } from '../css-classname';
+import { detectHoveredCol } from '../utils/bo-grid-check';
+
 
 const ResizeGridSingle = ({
 	// className = '',
@@ -397,6 +396,7 @@ const ResizeGridSingle = ({
 		top: 0,
 		direction: null,
 	});
+	const [hoveredColumn, setHoveredColumn] = useState(null);
 	const className = useSelect((select) => {
 		return select('core/block-editor')
 			.getBlockAttributes(clientId)?.className || '';
@@ -429,9 +429,18 @@ const ResizeGridSingle = ({
 
 		uniqueGridClasses.forEach((cls) => el.classList.add(cls));
 
-		console.log("Applying grid classes to wrapper:", uniqueGridClasses);
-
 	}, [className]);
+
+	useEffect(() => {
+		const handleHoverCol = (e) => {
+			const hovered = e.detail.col;
+			setHoveredColumn(hovered);
+		};
+
+		window.addEventListener('gridHoverColumn', handleHoverCol);
+		return () => window.removeEventListener('gridHoverColumn', handleHoverCol);
+	}, []);
+
 
 	const getMouseX = (event) => {
 		const { clientX, targetTouches } = event;
@@ -449,8 +458,8 @@ const ResizeGridSingle = ({
 			const { width, right, left, top, height } = block.getBoundingClientRect();
 			const parentWidth = block.parentNode?.offsetWidth || 1200;
 			const pixelPerColumn = parentWidth / gridWidth;
-			const { start, end } = getStartEndFromClassName(className, device);
-			console.log("start onMouseDown", start, end);
+			const { start, end } = getStartEndColFromClassName(className, device);
+
 			setDragState({
 				xPos: getMouseX(ev),
 				width,
@@ -464,11 +473,20 @@ const ResizeGridSingle = ({
 
 
 			setResizing(true);
+
+			// Zoek de juiste overlay van dit grid blok
+			const overlay = containerRef.current?.closest('.wp-block-vwe-grid-editor')?.querySelector('.vwe-grid-overlay');
+			if (overlay) {
+				overlay.classList.add('is-resizing');
+			}
+
+
 			const gutenDoc = containerRef.current?.ownerDocument || document;
 			gutenDoc.addEventListener('mousemove', onMouseMove);
 			gutenDoc.addEventListener('mouseup', onMouseUp);
 			ev.preventDefault();
 			ev.stopPropagation();
+
 		}
 	};
 
@@ -477,32 +495,27 @@ const ResizeGridSingle = ({
 		const mouseX = getMouseX(ev);
 
 		setDragState((prev) => {
-			const delta = mouseX - prev.xPos;
-			const spanDelta = Math.round(delta / prev.gridPixelWidth);
+			const hoveredCol = detectHoveredCol(ev.clientX, ev.clientY);
+			if (!onResize || hoveredCol === null) return prev;
 
-			// Alleen activeren bij daadwerkelijke delta
-			if (!onResize || spanDelta === 0) return prev;
-
-			let newStart = prev.start;
-			let newEnd = prev.end;
+			let newStart = Number(prev.start);
+			let newEnd = Number(prev.end);
 
 			if (prev.direction === 'left') {
-				newStart = Math.max(1, Math.min(prev.end - 1, prev.start + spanDelta));
+				newStart = hoveredCol ? hoveredCol : prev.start;
 			}
 			if (prev.direction === 'right') {
-				newEnd = Math.min(12, Math.max(prev.start + 1, prev.end + spanDelta));
+				newEnd = hoveredCol ? hoveredCol+1 : prev.end;
 			}
 
-			// Nu pas onResize met deze actuele waardes
+			
 			onResize({
 				direction: prev.direction,
-				delta: spanDelta,
 				start: newStart,
 				end: newEnd,
-				device: device, // 👈 dit is alles wat je nog moest toevoegen
+				device: device,
 			});
 
-			// Reset de reference point voor de volgende beweging
 			return {
 				...prev,
 				start: newStart,
@@ -510,21 +523,30 @@ const ResizeGridSingle = ({
 				xPos: mouseX,
 			};
 		});
+
 	};
 
+	
 	const onMouseUp = () => {
-		console.log("onMouseUp");
 
 		setResizing(false);
+		const overlay = containerRef.current?.closest('.wp-block-vwe-grid-editor')?.querySelector('.vwe-grid-overlay');
+		if (overlay) {
+			overlay.classList.remove('is-resizing');
+		}
+
 		const gutenDoc = containerRef.current?.ownerDocument || document;
 		gutenDoc.removeEventListener('mousemove', onMouseMove);
 		gutenDoc.removeEventListener('mouseup', onMouseUp);
+		setHoveredColumn(null);
 	};
 
 	const wrapperClasses = classnames(className, {
 		'wp-block-vwe-grid__resizing': resizing,
 		'wp-block-vwe-grid__resizable': true,
 	});
+
+
 
 	return (
 		<div
@@ -565,42 +587,6 @@ export default ResizeGridSingle;
 
  
 
-/**************************** src/grid/resize-grid-single/nearest.js ****************************/ 
-/*
- * Returns the 0-based column that the mouse is closest to
- */
-export default function findNearest( parent, xPos, direction, totalColumns ) {
-	// Each column is 1/12th the width of the parent
-	const { width, x } = parent.getBoundingClientRect();
-	const colWidth = width / totalColumns;
-	const mousePos = xPos - x;
-
-	// Which column does mousePos fall into?
-	const column = Math.floor( mousePos / colWidth );
-	const offsetInColumn = mousePos % colWidth;
-
-	// If we're going left then we need to be in the first half of a column
-	if ( direction === 'left' ) {
-		if ( offsetInColumn <= colWidth / 2 ) {
-			// Matched this column
-			return column;
-		}
-
-		// Not gone over the threshold - match the next column
-		return column + 1;
-	}
-
-	// If going right we need to be in the second half
-	if ( offsetInColumn < colWidth / 2 ) {
-		// Matched this column
-		return column;
-	}
-
-	return column + 1;
-}
-
- 
-
 /**************************** src/grid/resize-grid-single/resize-handle.js ****************************/ 
 /**
  * External dependencies
@@ -634,7 +620,7 @@ const ResizeHandle = ( { direction, height, xPos, top, isSelected } ) => {
 	return (
 		<div className={ classes } style={ wrapStyle }>
 			<span>
-				<div className={ handleClasses } style={ dragStyle }></div>
+				{/* <div className={ handleClasses } style={ dragStyle }></div> */}
 			</span>
 		</div>
 	);
@@ -656,221 +642,29 @@ export function detectBoGridPresence() {
 	}
 	return true;
 }
- 
 
-/**************************** src/grid/variation-control/index.native.js ****************************/ 
-/**
- * External dependencies
- */
-import {
-	ScrollView,
-	View,
-	Text,
-	TouchableWithoutFeedback,
-	TouchableHighlight,
-	Platform,
-} from 'react-native';
 
-/**
- * WordPress dependencies
- */
-import { usePreferredColorSchemeStyle } from '@wordpress/compose';
-import { __ } from '@wordpress/i18n';
-import { BottomSheet } from '@wordpress/components';
-import { InserterButton } from '@wordpress/block-editor';
-import { Icon, close } from '@wordpress/icons';
-import { useMemo } from '@wordpress/element';
+export function detectHoveredCol(clientX, clientY) {
 
-/**
- * Internal dependencies
- */
-import styles from './style.native.scss';
+	// iframe for the editor canvas in tablet and mobile view
+	const iframe = document.querySelector('iframe[name="editor-canvas"]');
+	if (iframe && iframe.contentDocument) {
+	
+		const els = iframe.contentDocument.elementsFromPoint(clientX, clientY);
+		const hoveredCol = Array.from(els).find(el => el.classList?.contains('vwe-grid-overlay__col'));
+		if (hoveredCol) {
+			return Number(hoveredCol.dataset.col);
+		}
+		return null;
+	}
 
-function VariationControlSelectedButton( { name, icon } ) {
-	const buttonBorder = usePreferredColorSchemeStyle(
-		styles[ 'variation-control-selected-button__item' ],
-		styles[ 'variation-control-selected-button__item-dark' ]
-	);
-
-	const labelIconStyle = usePreferredColorSchemeStyle(
-		styles[ 'variation-control-selected-button__label-icon' ],
-		styles[ 'variation-control-selected-button__label-icon-dark' ]
-	);
-
-	const labelStyle = usePreferredColorSchemeStyle(
-		styles[ 'variation-control-selected-button__label' ],
-		styles[ 'variation-control-selected-button__label-dark' ]
-	);
-	return (
-		<TouchableHighlight
-			style={ [
-				InserterButton.Styles.modalItem,
-				styles[ 'variation-control-selected-button' ],
-			] }
-		>
-			<>
-				<View
-					style={ [
-						InserterButton.Styles.modalIconWrapper,
-						buttonBorder,
-					] }
-				>
-					<View style={ labelIconStyle }>
-						<Icon
-							icon={ icon }
-							fill={ labelIconStyle.fill }
-							size={ labelIconStyle.width }
-						/>
-					</View>
-				</View>
-				<Text style={ labelStyle }>{ name }</Text>
-			</>
-		</TouchableHighlight>
-	);
+	const els = document.elementsFromPoint(clientX, clientY);
+	const hoveredCol = els.find(el => el.classList?.contains('vwe-grid-overlay__col'));
+	if (hoveredCol) {
+		return Number(hoveredCol.dataset.col);
+	}
+	return null;
 }
-
-function VariationControlInner( { variations, onChange, selected = null } ) {
-	return useMemo(
-		() => (
-			<>
-				<ScrollView
-					horizontal
-					showsHorizontalScrollIndicator={ false }
-					contentContainerStyle={
-						styles[
-							'variation-control-inner__scrollview-container'
-						]
-					}
-					style={ styles[ 'variation-control-inner__scrollview' ] }
-				>
-					{ variations.map( ( variation ) => {
-						const isSelected = variation.name === selected;
-						return (
-							<View
-								key={ variation.name }
-								style={
-									styles[ 'variation-control-inner__item' ]
-								}
-							>
-								{ isSelected ? (
-									<VariationControlSelectedButton
-										name={ variation.title }
-										icon={ variation.icon }
-									/>
-								) : (
-									<InserterButton
-										item={ variation }
-										maxWidth={ 112 }
-										key={ variation.name }
-										onSelect={ () => onChange( variation ) }
-									/>
-								) }
-							</View>
-						);
-					} ) }
-				</ScrollView>
-				<Text style={ styles[ 'variation-control-inner__footer' ] }>
-					{ __(
-						'Note: Layout may vary between themes and screen sizes',
-						'layout-grid'
-					) }
-				</Text>
-				{ selected && (
-					<Text
-						style={ [
-							styles[ 'variation-control-inner__footer' ],
-							styles[ 'variation-control-inner__footer-last' ],
-						] }
-					>
-						{ __(
-							'Changing the number of columns will reset your layout and could remove content.',
-							'layout-grid'
-						) }
-					</Text>
-				) }
-			</>
-		),
-		[ variations, onChange ]
-	);
-}
-
-const hitSlop = { top: 22, bottom: 22, left: 22, right: 22 };
-function VariationControl( {
-	isVisible,
-	onClose,
-	variations,
-	onChange,
-	hasLeftButton,
-} ) {
-	const isIOS = Platform.OS === 'ios';
-
-	const cancelButtonStyle = usePreferredColorSchemeStyle(
-		styles[ 'variation-control__cancel-button' ],
-		styles[ 'variation-control__cancel-button-dark' ]
-	);
-
-	const leftButton = useMemo(
-		() => (
-			<TouchableWithoutFeedback onPress={ onClose } hitSlop={ hitSlop }>
-				<View>
-					{ isIOS ? (
-						<Text
-							style={ cancelButtonStyle }
-							maxFontSizeMultiplier={ 2 }
-						>
-							{
-								__(
-									'Cancel'
-								) /* This is intentionally without a translation domain. */
-							}
-						</Text>
-					) : (
-						<Icon
-							icon={ close }
-							size={ 24 }
-							style={ styles[ 'variation-control__close-icon' ] }
-						/>
-					) }
-				</View>
-			</TouchableWithoutFeedback>
-		),
-		[ onClose, cancelButtonStyle ]
-	);
-
-	const onVariationSelect = ( variation ) => {
-		onChange( variation );
-		onClose();
-	};
-
-	return useMemo(
-		() => (
-			<BottomSheet
-				isVisible={ isVisible }
-				onClose={ onClose }
-				title={
-					__(
-						'Select a layout'
-					) /* This is intentionally without a translation domain. */
-				}
-				contentStyle={ styles[ 'variation-control' ] }
-				leftButton={ hasLeftButton && leftButton }
-			>
-				<View style={ styles[ 'variation-control__inner-shell' ] }>
-					<VariationControlInner
-						variations={ variations }
-						onChange={ onVariationSelect }
-					/>
-				</View>
-			</BottomSheet>
-		),
-		[ variations, isVisible, onClose, onChange ]
-	);
-}
-
-VariationControl.Inner = VariationControlInner;
-
-export default VariationControl;
-
  
 
 /**************************** src/grid/css-classname.js ****************************/ 
@@ -878,173 +672,9 @@ export default VariationControl;
  * Internal dependencies
  */
 
-import { DEVICE_BREAKPOINTS, getSpanForDevice, getOffsetForDevice } from '../constants';
-import { getDefaultSpan, getGridWidth } from './grid-defaults';
 
-const getDevicelessSpanClassName = ( column, value ) => `column${ column + 1 }-grid__span-${ value }`;
-const getDevicelessOffsetClassName = ( column, value ) => `column${ column + 1 }-grid__start-${ value }`;
-const getDevicelessRowClassName = ( column, value ) => `column${ column + 1 }-grid__row-${ value }`;
-const getDevicelessAlignmentClassName = ( column, value ) => `column${ column + 1 }-grid__valign-${ value }`;
-
-const getDeviceSpanClassName = ( column, value, device ) => `column${ column + 1 }-${ device.toLowerCase() }-grid__span-${ value }`;
-const getDeviceOffsetClassName = ( column, value, device ) => `column${ column + 1 }-${ device.toLowerCase() }-grid__start-${ value }`;
-const getDeviceRowClassName = ( column, value, device ) => `column${ column + 1 }-${ device.toLowerCase() }-grid__row-${ value }`;
-
-function convertOffsetsToPositions( totalColumns, device, attributes ) {
-	const offsets = [];
-	let position = 0;
-
-	for ( let column = 0; column < totalColumns; column++ ) {
-		const customSpanName = getSpanForDevice( column, device );
-		const customOffsetName = getOffsetForDevice( column, device );
-		const span = attributes[ customSpanName ] || getDefaultSpan( device, totalColumns, column );
-		const offset = attributes[ customOffsetName ] || 0;
-
-		// Position is the current position plus the offset
-		offsets.push( {
-			position: position + offset,
-			span,
-		} );
-
-		// Move the position up by the offset and the width of the column
-		position += offset;
-		position += span;
-	}
-
-	return offsets;
-}
-
-/*
- * Converts a position into a row
- */
-function getGridRow( position, maxWidth ) {
-	return Math.floor( position / maxWidth );
-}
-
-/*
- * Converts a position into an offset from the start of a row
- */
-function getGridRowStart( position, maxWidth ) {
-	return position % maxWidth;
-}
-
-function getDeviceClass( name, column, value, device, enabled = true ) {
-	return {
-		name,
-		column,
-		value,
-		device,
-		enabled,
-	};
-}
-
-function getDeviceColumnClass( device, columns, attributes ) {
-	const classes = [];
-	const width = getGridWidth( device );
-
-	// Convert all the offsets into absolute positions. Treat it as one giant row
-	const positions = convertOffsetsToPositions( columns, device, attributes );
-
-	// Now go through and convert this to classes, converting the single row absolute positions into rows and row offsets
-	for ( let index = 0; index < positions.length; index++ ) {
-		const { span, position } = positions[ index ];
-		const row = getGridRow( position, width );
-		const offset = getGridRowStart( position, width );
-
-		classes.push( getDeviceClass( 'span', index, span, device ) );
-		classes.push( getDeviceClass( 'offset', index, offset + 1, device, offset > 0 ) );
-		classes.push( getDeviceClass( 'row', index, row + 1, device ) );
-	}
-
-	return classes;
-}
-
-function convertClassesToObject( classes, map ) {
-	const cssValues = {};
-
-	classes
-		.filter( ( item ) => item.enabled && map[ item.name ] )
-		.map( ( item ) => cssValues[ map[ item.name ]( item.column, item.value, item.device ) ] = true );
-
-	return cssValues;
-}
-
-/**
- * These are used in the editor which doesn't rely on CSS media queries, and so the classes need to be device agnostic
- *
- * @param {string} device - Device string
- * @param {number} columns - Number of columns
- * @param {object} attributes - Grid block attributes
- * @param {object[]} columnAttributes - Grid column block attributes
- */
-export function getAsEditorCSS( device, columns, attributes = {}, columnAttributes = [] ) {
-	const values = getDeviceColumnClass(
-		device,
-		columns,
-		attributes
-	);
-	const map = {
-		span: getDevicelessSpanClassName,
-		offset: getDevicelessOffsetClassName,
-		row: getDevicelessRowClassName,
-	};
-
-	// Apply column-specific alignment at the global level. This is because of the nested DOM inside the editor
-	const columnAlignments = {};
-	for ( let index = 0; index < columns; index++ ) {
-		// If the column has a vertical alignment and it's not the same as the global one then add a CSS class
-		if (
-			columnAttributes[ index ].verticalAlignment &&
-			columnAttributes[ index ].verticalAlignment !== attributes.verticalAlignment
-		) {
-			columnAlignments[
-				getDevicelessAlignmentClassName(
-					index,
-					columnAttributes[ index ].verticalAlignment
-				)
-			] = true;
-		}
-	}
-
-	return {
-		...convertClassesToObject( values, map ),
-		...columnAlignments,
-	};
-}
-
-/*
- * These are used in the front end and need device-specific CSS
- */
-export function getAsCSS( columns, attributes = {} ) {
-	let classes = {};
-	const map = {
-		span: getDeviceSpanClassName,
-		offset: getDeviceOffsetClassName,
-		row: getDeviceRowClassName,
-	};
-
-	for ( let deviceIndex = 0; deviceIndex < DEVICE_BREAKPOINTS.length; deviceIndex++ ) {
-		classes = {
-			...classes,
-			// ...convertClassesToObject( getDeviceColumnClass( DEVICE_BREAKPOINTS[ deviceIndex ], columns, attributes ), map ),
-		};
-	}
-
-	if ( ! attributes.addGutterEnds ) {
-		classes[ 'wp-block-jetpack-layout-gutter__nowrap' ] = true;
-	}
-
-	if ( attributes.verticalAlignment && attributes.verticalAlignment !== 'top' ) {
-		classes[
-			`are-vertically-aligned-${ attributes.verticalAlignment }`
-		] = true;
-	}
-
-	return classes;
-}
-
-export function removeGridClasses( classes, device ) {
-	if ( ! classes ) {
+export function removeColumnClasses(classes, device) {
+	if (!classes) {
 		return classes;
 	}
 
@@ -1059,50 +689,67 @@ export function removeGridClasses( classes, device ) {
 		.replace(/is-vertically-aligned-\w*/, '')
 		.replace(/is-style-[A-Za-z-_]*/, '')
 		.replace(new RegExp(`${deviceTypeId}-grid-\\d+-\\d+`, 'g'), '')
-		.replace(new RegExp(`${deviceTypeId}-row-\\d+-\\d+`, 'g'), '')
 		.replace(/are-vertically-aligned-\w*/)
 		.trim();
 }
+export function removeRowClasses(classes, device) {
+	if (!classes) {
+		return classes;
+	}
 
-export function getGutterClasses( { gutterSize, addGutterEnds } ) {
-	// Note that 'large' is the default and doesn't output any CSS class
-	return {
-		'wp-block-jetpack-layout-gutter__nowrap': ! addGutterEnds,
-		'wp-block-jetpack-layout-gutter__none': gutterSize === 'none',
-		'wp-block-jetpack-layout-gutter__small': gutterSize === 'small',
-		'wp-block-jetpack-layout-gutter__medium': gutterSize === 'medium',
-		'wp-block-jetpack-layout-gutter__huge': gutterSize === 'huge',
-	};
+	const deviceTypeId = device.charAt(0).toLowerCase();
+	const classString = String(classes); // ← Veiligstellen tegen arrays/undefined
+
+	return classString
+		.replace(new RegExp(`${deviceTypeId}-row-\\d+-\\d+`, 'g'), '')
+		.trim();
 }
 
+export function replaceColumnValuesInClass(className, device, start, end) {
+	const prefix = device.charAt(0).toLowerCase();
+	const newClass = (typeof start === 'number' && typeof end === 'number' && start < end)
+		? `${prefix}-grid-${start}-${end}`
+		: '';
 
+	const cleaned = className
+		?.split(' ')
+		.filter(cls => !new RegExp(`${prefix}-grid-\\d+-\\d+`).test(cls))
+		.join(' ') || '';
 
-/** new new */
-export function getGridClassesForBlock(attributes, index = 0) {
-	const devices = ['d', 't', 'm'];
-	const breakpoints = ['Desktop', 'Tablet', 'Mobile'];
-	const classNames = [];
-
-	breakpoints.forEach((deviceName, i) => {
-		const prefix = devices[i];
-		const spanAttr = getSpanForDevice(index, deviceName);
-		const offsetAttr = getOffsetForDevice(index, deviceName);
-
-		const span = attributes[spanAttr] || 4;
-		const offset = attributes[offsetAttr] || 0;
-
-		const start = offset + 1;
-		const end = start + span;
-
-		classNames.push(`${prefix}-grid-${start}-${end}`);
-	});
-	return classNames.join(' ');
+	return `${cleaned} ${newClass}`.trim();
 }
+export function replaceRowValuesInClass(className, device, start, end) {
+	const prefix = device.charAt(0).toLowerCase();
+	let newClass = '';
 
-export function getStartEndFromClassName(className = '') {
-	
-	const match = className.match(/d-grid-(\d+)-(\d+)/);
+	if (typeof start === 'number' && typeof end === 'number' && start < end) {
+		newClass = `${prefix}-row-${start}-${end}`;
+	} else if (typeof start === 'number') {
+		newClass = `${prefix}-row-${start}`;
+	}
+
+	const cleaned = className
+		?.split(' ')
+		.filter(cls => !new RegExp(`${prefix}-row-\\d+(-\\d+)?`).test(cls))
+		.join(' ') || '';
+
+	return `${cleaned} ${newClass}`.trim();
+}
+export function getStartEndColFromClassName(className = '', device = 'Desktop') {
+
+	const prefix = device.charAt(0).toLowerCase();
+	const match = className.match(new RegExp(`${prefix}-grid-(\\d+)-(\\d+)`));
 	return match ? { start: parseInt(match[1], 10), end: parseInt(match[2], 10) } : { start: 1, end: 12 };
+}
+export function getStartEndRowFromClassName(className = '', device = 'Desktop') {
+	const prefix = device.charAt(0).toLowerCase();
+	const match = className.match(new RegExp(`${prefix}-row-(\\d+)(?:-(\\d+))?`));
+	return match
+		? {
+			start: parseInt(match[1], 10),
+			end: match[2] ? parseInt(match[2], 10) : undefined,
+		}
+		: { start: null, end: null };
 }
  
 
@@ -1146,35 +793,75 @@ import { detectBoGridPresence } from './utils/bo-grid-check';
  */
 
 import {
-	getAsEditorCSS,
-	removeGridClasses,
-	getGutterClasses,
+	removeColumnClasses
 } from './css-classname';
-import ColumnIcon from '../icons';
 import {
 	getLayouts,
-	getColumns,
-	DEVICE_BREAKPOINTS,
-	getSpanForDevice,
-	getOffsetForDevice,
-	getGutterValues,
 } from '../constants';
-import { getGridWidth, getDefaultSpan } from './grid-defaults';
-// import ResizeGrid from './resize-grid';
-import LayoutGrid from './layout-grid';
+import { getGridWidth } from './grid-defaults';
 import PreviewDevice from './preview-device';
 import { Notice } from '@wordpress/components';
 
 import {
 	withUpdateAlignment,
-	withUpdateColumns,
 	withSetPreviewDeviceType,
-	withColumns,
-	withColumnAttributes,
 	withPreviewDeviceType,
 } from './higher-order';
-
+import GridOverlay from './grid-overlay';
 const MINIMUM_RESIZE_SIZE = 50; // Empirically determined to be a good size
+
+const BLOCKS_TEMPLATE = [
+	...Array.from({ length: 14 }).map((_, i) => {
+		const index = i + 1;
+		const isEdge = index === 1 || index === 14;
+		const background = isEdge ? '#ccc' : '#B9E5FB';
+		return [
+			'core/group',
+			{
+				className: `d-row-1-3 t-row-1-3 m-row-1-3 d-grid-${index}-${index} t-grid-${index}-${index} m-grid-${index}-${index}`,
+				style: {
+					color: { background },
+					layout: { display: 'block' },
+					dimensions: { minHeight: '120px' },
+				},
+			},
+		];
+	}),
+	[
+		'core/heading',
+		{
+			content: 'Snow Patrol',
+			className: 'd-row-1 d-grid-2-6 t-grid-2-6 m-grid-2-5',
+			style: {
+				typography: { fontSize: '48px' },
+				color: { text: '#ffffff' },
+			},
+		},
+	],
+	[
+		'core/paragraph',
+		{
+			content: 'Lorem ipsum dolor sit amet...',
+			className: 'd-row-1 d-grid-6-14 t-grid-6-14 m-grid-5-10',
+		},
+	],
+	[
+		'core/buttons',
+		{
+			className: 'd-row-2 d-grid-2-6 t-grid-2-6 m-grid-2-10',
+		},
+		[
+			[
+				'core/button',
+				{
+					text: 'Meer informatie',
+					className: 'is-style-fill',
+				},
+			],
+		],
+	],
+];
+
 
 class Edit extends Component {
 	constructor(props) {
@@ -1184,133 +871,34 @@ class Edit extends Component {
 		this.state = {
 			inspectorDeviceType: 'Desktop',
 			viewPort: 'Desktop',
-			hasBoGrid: true, // default = true
+			hasBoGrid: true,
+			hoveredColumn: null,
 		};
 	}
 	componentDidMount() {
 		const hasGrid = detectBoGridPresence();
 		this.setState({ hasBoGrid: hasGrid });
+		this.addEditorGridClasses();
+
 	}
-	/*
-	 * Change the layout (number of columns), resetting everything to the default
-	 */
-	onChangeLayout = (columns) => {
-		const columnValues = {};
+	componentDidUpdate() {
+		this.addEditorGridClasses();
+	}
+	componentWillUnmount() {
+	}
+	addEditorGridClasses = () => {
+		const container = this.overlayRef.current;
+		if (!container) return;
 
-		for (let pos = 0; pos < columns; pos++) {
-			for (
-				let device = 0;
-				device < DEVICE_BREAKPOINTS.length;
-				device++
-			) {
-				const defaultSpan = getDefaultSpan(
-					DEVICE_BREAKPOINTS[device],
-					columns,
-					pos
-				);
+		const innerBlocksLayout = container.querySelector('.block-editor-block-list__layout');
+		if (!innerBlocksLayout) return;
 
-				columnValues[
-					getSpanForDevice(pos, DEVICE_BREAKPOINTS[device])
-				] = defaultSpan;
-				columnValues[
-					getOffsetForDevice(pos, DEVICE_BREAKPOINTS[device])
-				] = 0;
+		['d-full', 't-full', 'm-full', 'bo-grid'].forEach((cls) => {
+			if (!innerBlocksLayout.classList.contains(cls)) {
+				innerBlocksLayout.classList.add(cls);
 			}
-		}
-
-		this.props.updateColumns(this.props.columns, columns, columnValues);
-	};
-
-	onResize = (column, adjustment) => {
-		const { attributes, columns } = this.props;
-		const grid = new LayoutGrid(
-			attributes,
-			this.getPreviewMode(),
-			columns
-		);
-		const adjustedGrid = grid.getAdjustedGrid(column, adjustment);
-
-		if (adjustedGrid) {
-			this.adjustGrid(adjustedGrid);
-		}
-	};
-
-	onChangeSpan = (column, device, value) => {
-		const { attributes, columns } = this.props;
-		const grid = new LayoutGrid(attributes, device, columns);
-		const adjustedGrid = grid.getAdjustedGrid(column, {
-			span: parseInt(value, 10),
 		});
-
-		if (adjustedGrid) {
-			this.adjustGrid(adjustedGrid);
-		}
 	};
-
-	onChangeOffset = (column, device, value) => {
-		const { attributes, columns } = this.props;
-		const grid = new LayoutGrid(attributes, device, columns);
-		const adjustedGrid = grid.getAdjustedGrid(column, {
-			start: grid.convertOffsetToStart(column, parseInt(value, 10)),
-		});
-
-		if (adjustedGrid) {
-			this.adjustGrid(adjustedGrid);
-		}
-	};
-
-	adjustGrid(grid) {
-		const { setAttributes, attributes } = this.props;
-		const device = this.getPreviewMode();
-		setAttributes({
-			...grid,
-			className: removeGridClasses(attributes.className, device),
-		});
-	}
-
-	renderDeviceSettings(columns, device, attributes) {
-		const grid = new LayoutGrid(attributes, device, this.props.columns);
-		const settings = [];
-
-		for (let column = 0; column < columns; column++) {
-			const span =
-				grid.getSpan(column) ||
-				getDefaultSpan(device, columns, column);
-			const offset = grid.getOffset(column) || 0;
-
-			settings.push(
-				<div className="vwe-grid-settings" key={column}>
-					<strong>
-						{__('Column', 'layout-grid')} {column + 1}
-					</strong>
-					<div className="vwe-grid-settings__group">
-						<TextControl
-							type="number"
-							label={__('Offset', 'layout-grid')}
-							value={offset || 0}
-							min={0}
-							max={getGridWidth(device) - 1}
-							onChange={(value) =>
-								this.onChangeOffset(column, device, value)
-							}
-						/>
-						<TextControl
-							type="number"
-							label={__('Span', 'layout-grid')}
-							value={span}
-							min={1}
-							max={getGridWidth(device)}
-							onChange={(value) =>
-								this.onChangeSpan(column, device, value)
-							}
-						/>
-					</div>
-				</div>
-			);
-		}
-
-		return settings;
-	}
 
 	canResizeBreakpoint(device) {
 		if (this.overlayRef && this.overlayRef.current) {
@@ -1357,7 +945,9 @@ class Edit extends Component {
 		// Return something appropriate for the viewport (mobile or tablet)
 		return this.state.inspectorDeviceType;
 	}
-
+	handleGridHover = (e) => {
+		this.setState({ hoveredColumn: e.detail.col });
+	};
 	render() {
 		const {
 			className,
@@ -1371,21 +961,15 @@ class Edit extends Component {
 		const { viewPort } = this.state;
 		const previewMode = this.getPreviewMode();
 		const inspectorDeviceType = this.getInspectorMode();
-		const extra = getAsEditorCSS(
-			previewMode,
-			columns,
-			attributes,
-			columnAttributes
-		);
-		const { gutterSize, addGutterEnds, verticalAlignment } = attributes;
-		const layoutGrid = new LayoutGrid(attributes, previewMode, columns);
+
+		const { verticalAlignment } = attributes;
+		// const layoutGrid = new LayoutGrid(attributes, previewMode, columns);
 		const classes = classnames(
-			removeGridClasses(className, previewMode).replace(
+			removeColumnClasses(className, previewMode).replace(
 				'layout-grid',
 				'layout-grid-editor'
 			),
 			'wp-block-vwe-grid-editor',
-			extra,
 			{
 				'wp-block-jetpack-layout-tablet': previewMode === 'Tablet',
 				'wp-block-jetpack-layout-desktop': previewMode === 'Desktop',
@@ -1395,61 +979,9 @@ class Edit extends Component {
 				),
 				[`are-vertically-aligned-${verticalAlignment}`]: verticalAlignment,
 			},
-			getGutterClasses(attributes)
 		);
 
-		if (columns === 0) {
-			return (
-				<Placeholder
-					icon="layout"
-					label={__('Choose Layout', 'layout-grid')}
-					instructions={__(
-						'Select a layout to start with:',
-						'layout-grid'
-					)}
-					className={classes}
-				>
-					<ul className="block-editor-inner-blocks__template-picker-options">
-						{getColumns().map((column) => (
-							<li key={column.value}>
-								<IconButton
-									isSecondary
-									icon={
-										<ColumnIcon columns={column.value} />
-									}
-									onClick={() =>
-										this.onChangeLayout(column.value)
-									}
-									className="block-editor-inner-blocks__template-picker-option"
-									label={column.label}
-								/>
-							</li>
-						))}
-					</ul>
-				</Placeholder>
-			);
-		}
 
-		const toggleControl = (
-			<ToggleControl
-				label={__('Add end gutters', 'layout-grid')}
-				help={
-					addGutterEnds
-						? __(
-							'Toggle off to remove the spacing left and right of the grid.',
-							'layout-grid'
-						)
-						: __(
-							'Toggle on to add space left and right of the layout grid. ',
-							'layout-grid'
-						)
-				}
-				checked={addGutterEnds}
-				onChange={(newValue) =>
-					setAttributes({ addGutterEnds: newValue })
-				}
-			/>
-		);
 
 		return (
 			<>
@@ -1463,7 +995,8 @@ class Edit extends Component {
 					}
 				/>
 
-				<div className={classes} >
+				<div className={classes} ref={this.overlayRef}>
+					<GridOverlay device={previewMode} />
 					{!this.state.hasBoGrid && (
 						<Notice status="warning" isDismissible={false}>
 							<strong>{__('BO Grid missing', 'layout-grid')}</strong>
@@ -1477,58 +1010,13 @@ class Edit extends Component {
 					)}
 
 					<InnerBlocks
-						template={null}
+						template={BLOCKS_TEMPLATE}
 						templateLock={false}
 						allowedBlocks={undefined}
 					/>
 				</div>
 
 				<InspectorControls>
-					<PanelBody title={__('Layout', 'layout-grid')}>
-						<div className="vwe-grid-columns block-editor-block-styles">
-							{getColumns().map((column) => (
-								<div
-									key={column.value}
-									className={classnames(
-										'block-editor-block-styles__item',
-										{
-											'is-active': columns === column.value,
-										}
-									)}
-									onClick={() =>
-										this.onChangeLayout(column.value)
-									}
-									onKeyDown={(event) => {
-										if (
-											ENTER === event.keyCode ||
-											SPACE === event.keyCode
-										) {
-											event.preventDefault();
-											this.onChangeLayout(column.value);
-										}
-									}}
-									role="button"
-									tabIndex="0"
-									aria-label={column.label}
-								>
-									<div className="block-editor-block-styles__item-preview">
-										<ColumnIcon columns={column.value} />
-									</div>
-									<div className="editor-block-styles__item-label block-editor-block-styles__item-label">
-										{column.label}
-									</div>
-								</div>
-							))}
-						</div>
-
-						<p className="vwe-grid-help">
-							{__(
-								'Changing the number of columns will reset your layout and could remove content.',
-								'layout-grid'
-							)}
-						</p>
-					</PanelBody>
-
 					<PanelBody title={__('Responsive Breakpoints', 'layout-grid')}>
 						<p className="vwe-grid-help">
 							{__(
@@ -1552,36 +1040,9 @@ class Edit extends Component {
 							))}
 						</ButtonGroup>
 
-						{this.renderDeviceSettings(
-							columns,
-							inspectorDeviceType,
-							attributes
-						)}
 					</PanelBody>
 
-					<PanelBody title={__('Gutter', 'layout-grid')}>
-						<p>{__('Gutter size', 'layout-grid')}</p>
 
-						<SelectControl
-							value={gutterSize}
-							onChange={(newValue) =>
-								setAttributes({
-									gutterSize: newValue,
-									addGutterEnds:
-										newValue === 'none'
-											? false
-											: addGutterEnds,
-								})
-							}
-							options={getGutterValues()}
-						/>
-
-						{gutterSize === 'none' ? (
-							<Disabled>{toggleControl}</Disabled>
-						) : (
-							toggleControl
-						)}
-					</PanelBody>
 				</InspectorControls>
 
 				<BlockControls>
@@ -1610,167 +1071,9 @@ function MaybeDisabledEdit(props) {
 
 export default compose([
 	withUpdateAlignment(),
-	withUpdateColumns(),
 	withSetPreviewDeviceType(),
-	withColumns(),
-	withColumnAttributes(),
 	withPreviewDeviceType(),
 ])(MaybeDisabledEdit);
-
- 
-
-/**************************** src/grid/edit.native.js ****************************/ 
-/**
- * External dependencies
- */
-import { View, Dimensions } from 'react-native';
-/**
- * WordPress dependencies
- */
-import {
-	InnerBlocks,
-	InspectorControls,
-	BlockControls,
-	BlockVerticalAlignmentToolbar,
-} from '@wordpress/block-editor';
-import { PanelBody, alignmentHelpers } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
-import { compose, useResizeObserver } from '@wordpress/compose';
-import { useState } from '@wordpress/element';
-
-/**
- * Internal dependencies
- */
-import variations from './variations';
-import VariationControl from './variation-control';
-import {
-	DEVICE_BREAKPOINTS,
-	getSpanForDevice,
-	getOffsetForDevice,
-} from './../constants';
-import { getDefaultSpan } from './grid-defaults';
-import {
-	withUpdateAlignment,
-	withUpdateColumns,
-	withColumns,
-	withColumnAttributes,
-} from './higher-order';
-import styles from './edit.native.scss';
-
-
-const DEFAULT_TEMPLATE = [
-	[ 'vwe/grid-column', {}, [] ],
-	[ 'vwe/grid-column', {}, [] ],
-];
-
-const { isFullWidth } = alignmentHelpers;
-
-function ColumnsEdit( {
-	clientId,
-	attributes = {},
-	columns,
-	updateAlignment,
-	updateColumns,
-} ) {
-	const { verticalAlignment, align } = attributes;
-
-	const [ isDefaultColumns, setDefaultColumns ] = useState( false );
-	if ( ! columns ) {
-		// Set the default column on the next tick.
-		// This is done so that the insertion of the Layout Grid Block inside other blocks
-		// such as thr group block or itself doesn't conflict with removal BlockPicker BottomSheet
-		// and the VariationControl BottomSheet.
-		// And we end up with a state where the VariationControl is set to be visible
-		// but not dismissible.
-		// eslint-disable-next-line @wordpress/react-no-unsafe-timeout
-		setTimeout( () => {
-			setDefaultColumns( true );
-		}, 0 );
-	}
-
-	const [ resizeListener, sizes ] = useResizeObserver();
-	const { width } = sizes || {};
-
-	const onChangeLayout = ( selectedColumn ) => {
-		const columnValues = {};
-		const numberOfColumns = selectedColumn.innerBlocks.length;
-		// An array containing the [ 0, 1 ... numberOfColumns ]
-		const columnsArray = [ ...Array( numberOfColumns ).keys() ];
-		columnsArray.forEach( ( position ) => {
-			DEVICE_BREAKPOINTS.forEach( ( deviceName ) => {
-				const defaultSpan = getDefaultSpan(
-					deviceName,
-					numberOfColumns,
-					position
-				);
-				columnValues[
-					getSpanForDevice( position, deviceName )
-				] = defaultSpan;
-
-				columnValues[ getOffsetForDevice( position, deviceName ) ] = 0;
-			} );
-		} );
-
-		setDefaultColumns( false );
-		updateColumns( columns, numberOfColumns, columnValues );
-	};
-
-	const screenWidth = Math.floor( Dimensions.get( 'window' ).width );
-	const selectedColumnsName = columns ? variations[ columns - 1 ].name : null;
-
-	return (
-		<>
-			{ resizeListener }
-			<View style={ styles[ 'grid-columns' ] }>
-				<InnerBlocks
-					template={ isDefaultColumns ? DEFAULT_TEMPLATE : null }
-					templateLock="all"
-					allowedBlocks={ undefined }
-					orientation={ columns !== 1 ? 'horizontal' : undefined }
-					horizontal={ columns !== 1 }
-					contentResizeMode="stretch"
-					parentWidth={ isFullWidth( align ) ? screenWidth : width }
-					blockWidth={ isFullWidth( align ) ? screenWidth : width }
-					contentStyle={ {
-						width: width ? width : screenWidth,
-					} }
-				/>
-			</View>
-			<InspectorControls>
-				<PanelBody title={ __( 'Layout', 'layout-grid' ) }>
-					<VariationControl.Inner
-						variations={ variations }
-						onChange={ onChangeLayout }
-						selected={ selectedColumnsName }
-					/>
-				</PanelBody>
-			</InspectorControls>
-			<BlockControls>
-				<BlockVerticalAlignmentToolbar
-					onChange={ updateAlignment }
-					value={ verticalAlignment }
-				/>
-			</BlockControls>
-			<VariationControl
-				variations={ variations }
-				onClose={ () => {
-					setDefaultColumns( false );
-				} }
-				clientId={ clientId }
-				onChange={ onChangeLayout }
-				hasLeftButton={ true }
-				isVisible={ isDefaultColumns }
-			/>
-		</>
-	);
-}
-
-export default compose( [
-	withUpdateAlignment(),
-	withUpdateColumns(),
-	withColumns(),
-	withColumnAttributes(),
-] )( ColumnsEdit );
 
  
 
@@ -1778,64 +1081,44 @@ export default compose( [
 /**
  * Internal dependencies
  */
-
-import { DEVICE_MOBILE, DEVICE_TABLET } from '../constants';
-
-export const getGridWidth = device => {
-	if ( device === DEVICE_TABLET ) {
-		return 8;
-	} else if ( device === DEVICE_MOBILE ) {
-		return 4;
-	}
-
-	return 12;
+const GRID_COLUMNS = {
+	Desktop: 14,
+	Tablet: 14,
+	Mobile: 10,
 };
 
-export const getGridRows = device => {
-	if ( device === DEVICE_TABLET ) {
-		return 2;
-	} else if ( device === DEVICE_MOBILE ) {
-		return 4;
-	}
-
-	return 1;
-};
-
-export const getGridMax = ( device, columns ) => {
-	if ( device === DEVICE_TABLET && columns > 2 ) {
-		// 2x2 grid
-		return getGridWidth( device ) * 2;
-	}
-
-	if ( device === DEVICE_MOBILE ) {
-		return getGridWidth( device ) * columns;
-	}
-
-	return getGridWidth( device );
-};
-
-// Default spans to fill the device
-// 1 column: desktop=1x12x1 tablet=1x8x1 mobile=1x4x1
-// 2 column: desktop=2x6x1 tablet=2x4x1 mobile=1x4x2
-// 3 column: desktop=3x4x1 tablet=2x4x1 + 1x8x1 mobile=1x4x3
-// 4 column: desktop=4x3x1 tablet=2x4x2 mobile=1x4x4
-export function getDefaultSpan( device, columns, column ) {
-	if ( device === DEVICE_TABLET ) {
-		if ( columns === 3 && column === 2 ) {
-			return getGridWidth( device );
-		} else if ( columns > 1 ) {
-			return getGridWidth( device ) / 2;
-		}
-
-		return getGridWidth( device );
-	}
-
-	if ( device === DEVICE_MOBILE ) {
-		return getGridWidth( device );
-	}
-
-	return getGridWidth( device ) / columns;
+export function getGridWidth(device) { // BO-GRID defaults. Unfortunatly we can't get the actual value from the CSS
+	return GRID_COLUMNS[device] || 12;
 }
+
+ 
+
+/**************************** src/grid/grid-overlay.js ****************************/ 
+import { useEffect, useRef } from '@wordpress/element';
+
+const GridOverlay = ({ device }) => {
+    const columns = {
+        Desktop: 14,
+        Tablet: 14,
+        Mobile: 10,
+    }[device] || 14;
+
+    const overlayRef = useRef();
+
+    return (
+        <div className="vwe-grid-overlay bo-grid" ref={overlayRef}>
+            {Array.from({ length: columns }).map((_, i) => (
+                <div
+                    key={i}
+                    className={`vwe-grid-overlay__col d-grid-${i + 1}-${i + 1} t-grid-${i + 1}-${i + 1} m-grid-${i + 1}-${i + 1}`}
+                    data-col={i + 1}
+                />
+            ))}
+        </div>
+    );
+};
+
+export default GridOverlay;
 
  
 
@@ -1845,52 +1128,6 @@ export function getDefaultSpan( device, columns, column ) {
  */
 import { withSelect, withDispatch } from '@wordpress/data';
 
-/**
- * WordPress dependencies
- */
-import { createBlock } from '@wordpress/blocks';
-
-/**
- * Internal dependencies
- */
-import { removeGridClasses } from './css-classname';
-
-function getColumnBlocks( currentBlocks, previous, columns ) {
-	if ( columns > previous ) {
-		// Add new blocks to the end
-		return [
-			...currentBlocks,
-			...Array.from( { length: columns - previous }, () =>
-				createBlock( 'core/heading' )
-			),
-		];
-	}
-
-	// A little ugly but... ideally we remove empty blocks first, and then anything with content from the end
-	let cleanedBlocks = [ ...currentBlocks ];
-	let totalRemoved = 0;
-
-	// Reverse the blocks so we start at the end. This happens in-place
-	cleanedBlocks.reverse();
-
-	// Remove empty blocks
-	cleanedBlocks = cleanedBlocks.filter( ( block ) => {
-		if (
-			totalRemoved < previous - columns &&
-			block.innerBlocks.length === 0
-		) {
-			totalRemoved++;
-			return false;
-		}
-
-		return true;
-	} );
-
-	// If we still need to remove blocks then do them from the beginning before flipping it back round
-	return cleanedBlocks
-		.slice( Math.max( 0, previous - columns - totalRemoved ) )
-		.reverse();
-}
 
 function isSiteEditor() {
 	const siteEditorWrapper = document.querySelector( '#edit-site-editor' );
@@ -1931,39 +1168,6 @@ export function withUpdateAlignment() {
 	} );
 }
 
-export function withUpdateColumns() {
-	return withDispatch( ( dispatch, ownProps, registry ) => {
-		return {
-			updateColumns( previous, columns, columnValues ) {
-				const { clientId } = ownProps;
-				const { replaceBlock } = dispatch( 'core/block-editor' );
-				const { getBlocks } = registry.select( 'core/block-editor' );
-				const innerBlocks = getColumnBlocks(
-					getBlocks( clientId ),
-					previous,
-					columns
-				);
-
-				// Replace the whole block with a new one so that our changes to both the attributes and innerBlocks are atomic
-				// This ensures that the undo history has a single entry, preventing traversing to a 'half way' point where innerBlocks are changed
-				// but the column attributes arent
-				const blockCopy = createBlock(
-					ownProps.name,
-					{
-						...ownProps.attributes,
-						...columnValues,
-						className: removeGridClasses(
-							ownProps.attributes.className
-						),
-					},
-					innerBlocks
-				);
-
-				replaceBlock( clientId, blockCopy );
-			},
-		};
-	} );
-}
 
 export function withSetPreviewDeviceType() {
 	return withDispatch( ( dispatch ) => {
@@ -1983,30 +1187,6 @@ export function withSetPreviewDeviceType() {
 	} );
 }
 
-export function withColumns() {
-	return withSelect( ( select, { clientId } ) => {
-		const { getBlockCount } = select( 'core/block-editor' );
-
-		return {
-			columns: getBlockCount( clientId ),
-		};
-	} );
-}
-
-export function withColumnAttributes() {
-	return withSelect( ( select, { clientId } ) => {
-		const { getBlockOrder, getBlocksByClientId } = select(
-			'core/block-editor'
-		);
-
-		return {
-			columnAttributes: getBlockOrder( clientId ).map(
-				( innerBlockClientId ) =>
-					getBlocksByClientId( innerBlockClientId )[ 0 ].attributes
-			),
-		};
-	} );
-}
 
 export function withPreviewDeviceType() {
 	return withSelect( ( select ) => {
@@ -2145,96 +1325,29 @@ import { InnerBlocks } from '@wordpress/block-editor';
  * Internal dependencies
  */
 
-import { getAsCSS, removeGridClasses, getGutterClasses } from './css-classname';
+import { getAsCSS, removeColumnClasses } from './css-classname';
 
-const save = ( { attributes, innerBlocks } ) => {
+const save = ({ attributes, innerBlocks }) => {
+	const device = attributes.device;
 	const {
 		className,
 	} = attributes;
-	const extra = getAsCSS( innerBlocks.length, attributes );
 	const classes = classnames(
-		removeGridClasses( className ),
-		extra,
-		getGutterClasses( attributes ),
+		removeColumnClasses(className, device),
+		'd-full',
+		't-full',
+		'm-full',
+		'bo-grid',
 	);
 
 	return (
-		<div className={ classes }>
+		<div className={classes}>
 			<InnerBlocks.Content />
 		</div>
 	);
 };
 
 export default save;
-
- 
-
-/**************************** src/grid/variations.js ****************************/ 
-/**
- * WordPress dependencies
- */
-import { __ } from '@wordpress/i18n';
-
-/** @typedef {import('@wordpress/blocks').WPBlockVariation} WPBlockVariation */
-
-/**
- * Internal dependencies
- */
-import ColumnIcon from './../icons';
-/**
- * Template option choices for predefined columns layouts.
- *
- * @type {WPBlockVariation[]}
- */
-const variations = [
-	{
-		name: 'one-column',
-		title: __( 'One' ),
-		description: __( 'One column', 'layout-grid' ),
-		icon: <ColumnIcon columns={ 1 } />,
-		isDefault: true,
-		innerBlocks: [ [ 'core/heading' ] ],
-		scope: [ 'block' ],
-	},
-	{
-		name: 'two-columns',
-		title: __( 'Two' ),
-		description: __( 'Two columns', 'layout-grid' ),
-		icon: <ColumnIcon columns={ 2 } />,
-		innerBlocks: [
-			[ 'core/heading' ],
-			[ 'core/heading' ],
-		],
-		scope: [ 'block' ],
-	},
-	{
-		name: 'three-columns',
-		title: __( 'Three' ),
-		description: __( 'Three columns', 'layout-grid' ),
-		icon: <ColumnIcon columns={ 3 } />,
-		innerBlocks: [
-			[ 'core/heading' ],
-			[ 'core/heading' ],
-			[ 'core/heading' ],
-		],
-		scope: [ 'block' ],
-	},
-	{
-		name: 'four-columns',
-		title: __( 'Four' ),
-		description: __( 'Four columns', 'layout-grid' ),
-		icon: <ColumnIcon columns={ 4 } />,
-		innerBlocks: [
-			[ 'core/heading' ],
-			[ 'core/heading' ],
-			[ 'core/heading' ],
-			[ 'core/heading' ],
-		],
-		scope: [ 'block' ],
-	},
-];
-
-export default variations;
 
  
 
@@ -2246,43 +1359,6 @@ export default variations;
 import { __ } from '@wordpress/i18n';
 import { mobile, tablet, desktop } from '@wordpress/icons';
 
-function getSpacingValues() {
-	return [
-		{ value: 'small', label: __( 'Small', 'layout-grid' ) },
-		{ value: 'medium', label: __( 'Medium', 'layout-grid' ) },
-		{ value: 'large', label: __( 'Large', 'layout-grid' ) },
-		{ value: 'huge', label: __( 'Huge', 'layout-grid' ) },
-	];
-}
-
-export const getPaddingValues = () =>
-	[ { value: 'none', label: __( 'No padding', 'layout-grid' ) } ].concat(
-		getSpacingValues()
-	);
-
-export const getGutterValues = () =>
-	[ { value: 'none', label: __( 'No gutter', 'layout-grid' ) } ].concat(
-		getSpacingValues()
-	);
-
-export const getColumns = () => [
-	{
-		label: __( '1 cols', 'layout-grid' ),
-		value: 1,
-	},
-	{
-		label: __( '2 cols', 'layout-grid' ),
-		value: 2,
-	},
-	{
-		label: __( '3 cols', 'layout-grid' ),
-		value: 3,
-	},
-	{
-		label: __( '4 cols', 'layout-grid' ),
-		value: 4,
-	},
-];
 
 export const DEVICE_DESKTOP = 'Desktop';
 export const DEVICE_TABLET = 'Tablet';
@@ -2306,21 +1382,12 @@ export const getLayouts = () => [
 	},
 ];
 
-export const MAX_COLUMNS = 4;
 
 export const DEVICE_BREAKPOINTS = [
 	DEVICE_DESKTOP,
 	DEVICE_TABLET,
 	DEVICE_MOBILE,
 ];
-
-export function getSpanForDevice( column, device ) {
-	return `column${ column + 1 }${ device }Span`;
-}
-
-export function getOffsetForDevice( column, device ) {
-	return `column${ column + 1 }${ device }Offset`;
-}
 
  
 
@@ -2329,93 +1396,41 @@ export function getOffsetForDevice( column, device ) {
  * WordPress dependencies
  */
 
-import { Path, SVG } from '@wordpress/components';
+import { Path, SVG, Rect } from '@wordpress/components';
 
-export const GridIcon = ( props ) => {
-	const iconProps = { ...props };
-	if ( props.size ) {
-		iconProps.width = props.size;
-		iconProps.height = props.size;
-	}
 
-	return (
-		<SVG xmlns="http://www.w3.org/2000/svg"
-			width="24" height="24"
-			viewBox="0 0 24 24"
-			{ ...iconProps }
-		>
-			<Path d="M19 6H6c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h13c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7.5 11.5H6c-.3 0-.5-.2-.5-.5V8c0-.3.2-.5.5-.5h5.5v10zm4 0H13v-10h2.5v10zm4-.5c0 .3-.2.5-.5.5h-2v-10h2c.3 0 .5.2.5.5v9z" />
-		</SVG>
-	);
-};
-
-export const GridColumnIcon = ( props ) => (
-	<SVG xmlns="http://www.w3.org/2000/svg"
-		width="24" height="24"
-		viewBox="0 0 24 24"
-		{ ...props }
-	>
-		<Path d="M19 6H6c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h13c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zM5.5 17V8c0-.3.2-.5.5-.5h5.5v10H6c-.3 0-.5-.2-.5-.5zm14 0c0 .3-.2.5-.5.5h-2v-10h2c.3 0 .5.2.5.5v9z" />
+export const HalfLeftIcon = (props) => (
+	<SVG xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" {...props}>
+		<Path d="M4 4h8v16H4zM14 4h6v16h-6z" fill="#ccc" />
 	</SVG>
 );
 
-const ColSetup1 = ( props ) => (
-	<SVG xmlns="http://www.w3.org/2000/svg"
-		width="48" height="48"
-		viewBox="0 0 48 48"
-		{ ...props }
-	>
-		<Path d="M7 12v24h34V12H7zm32 22H9V14h30v20z" />
+export const HalfRightIcon = (props) => (
+	<SVG xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" {...props}>
+		<Path d="M4 4h6v16H4zM12 4h8v16h-8z" fill="#ccc" />
 	</SVG>
 );
 
-const ColSetup2 = ( props ) => (
-	<SVG xmlns="http://www.w3.org/2000/svg"
-		width="48" height="48"
-		viewBox="0 0 48 48"
-		{ ...props }
-	>
-		<Path d="M7,12v24h34V12H7z M23,34H9V14h14V34z M39,34H25V14h14V34z" />
+export const FullCenterIcon = (props) => (
+	<SVG xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" {...props}>
+		<Path d="M4 4h16v16H4z" fill="#ccc" />
 	</SVG>
 );
 
-const ColSetup3 = ( props ) => (
-	<SVG xmlns="http://www.w3.org/2000/svg"
-		width="48" height="48"
-		viewBox="0 0 48 48"
-		{ ...props }
+export const GridIcon = (props) => (
+	<SVG
+		viewBox="0 0 20.5 16"
+		xmlns="http://www.w3.org/2000/svg"
+		{...props}
 	>
-		<Path d="M7 12v24h34V12H7zm23 2h9v20h-9V14zm-2 20h-8V14h8v20zM9 14h9v20H9V14z" />
+		<Rect x="3.5" y="0" width="3" height="16" fill="#27aae1" />
+		<Rect x="0" y="0" width="3" height="16" fill="#b9e5fb" />
+		<Rect x="7" y="0" width="3" height="16" fill="#27aae1" />
+		<Rect x="10.5" y="0" width="3" height="16" fill="#27aae1" />
+		<Rect x="14" y="0" width="3" height="16" fill="#27aae1" />
+		<Rect x="17.5" y="0" width="3" height="16" fill="#b9e5fb" />
 	</SVG>
 );
-
-const ColSetup4 = ( props ) => (
-	<SVG xmlns="http://www.w3.org/2000/svg"
-		width="48" height="48"
-		viewBox="0 0 48 48"
-		{ ...props }
-	>
-		<Path d="M7 12v24h34V12H7zm8 22H9V14h6v20zm8 0h-6V14h6v20zm8 0h-6V14h6v20zm8 0h-6V14h6v20z" />
-	</SVG>
-);
-
-const ColumnIcon = ( { columns, ...props } ) => {
-	if ( columns === 4 ) {
-		return <ColSetup4 { ...props } />;
-	}
-
-	if ( columns === 3 ) {
-		return <ColSetup3 { ...props } />;
-	}
-
-	if ( columns === 2 ) {
-		return <ColSetup2 { ...props } />;
-	}
-
-	return <ColSetup1 { ...props } />;
-};
-
-export default ColumnIcon;
 
  
 
@@ -2435,76 +1450,98 @@ import '../editor.scss';
  */
 // import './grid/filters/withGridBlockResizing';
 import './grid/filters/withGridResizeHandles';
+import './grid/filters/withGridPositionControl';
 
 import editGrid from './grid/edit';
 import saveGrid from './grid/save';
 import { GridIcon } from './icons';
-import {
-	getSpanForDevice,
-	getOffsetForDevice,
-	DEVICE_BREAKPOINTS,
-	MAX_COLUMNS,
-} from './constants';
-
-
-
-function getColumnAttributes( total, breakpoints ) {
-	const attributes = {};
-
-	for ( let index = 0; index < total; index++ ) {
-		breakpoints.map( ( breakpoint ) => {
-			attributes[ getSpanForDevice( index, breakpoint ) ] = {
-				type: 'number',
-			};
-			attributes[ getOffsetForDevice( index, breakpoint ) ] = {
-				type: 'number',
-				default: 0,
-			};
-		} );
-	}
-
-	return attributes;
-}
 
 export function registerBlock() {
 	console.debug('registerBlock');
-	registerBlockType( 'vwe/grid', {
-		title: __( 'Layout Grid', 'layout-grid' ),
+	registerBlockType('vwe/grid', {
+		title: __('Layout Grid', 'layout-grid'),
 		description: __(
 			'Align blocks to a global grid, with support for responsive breakpoints.',
 			'layout-grid'
 		),
 		icon: GridIcon,
-		category: 'design',
+		category: 'layout',
 		supports: {
-			align: [ 'full' ],
+			align: ['full'],
 			html: false,
 		},
+		keywords: ['grid', 'layout', '_structure'],
 		example: {
 			attributes: {
-				columns: 2,
+				className: 'has-preview-style',
 			},
 			innerBlocks: [
-				
+				...Array.from({ length: 14 }).map((_, i) => {
+					const index = i + 1;
+					const isEdge = index === 1 || index === 14;
+					const background = isEdge ? '#000' : '#B9E5FB';
+					return {
+						name: 'core/group',
+						attributes: {
+							className: `preview-col d-row-1-3 t-row-1-3 m-row-1-3 d-grid-${index}-${index} t-grid-${index}-${index} m-grid-${index}-${index} `,
+							style: {
+								color: { background },
+								layout: { display: 'block' },
+								dimensions: { minHeight: '120px', height: '100%' },
+							},
+						},
+					};
+				}),
+				{
+					name: 'core/paragraph',
+					attributes: {
+						content: '<strong>Snow Patrol</strong>',
+						align: 'center',
+						style: {
+							typography: {
+								fontSize: 48,
+							},
+						},
+						className: 'd-row-1-2 t-row-1-2 d-grid-2-6 t-grid-2-6 m-grid-2-5 preview-handles',
+					},
+				},
+				{
+					name: 'core/paragraph',
+					attributes: {
+						content:
+							'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+						align: 'left',
+						className: 'd-row-1-4 t-row-1-4 d-grid-7-14 t-grid-7-14 m-grid-5-10 preview-handles',
+						style: {
+							dimensions: {
+								height: '100%'
+							},
+							layout: { display: 'block' },
+						},
+					},
+				},
+				{
+					name: 'core/buttons',
+					innerBlocks: [
+						{
+							name: 'core/button',
+							attributes: {
+								text: 'Meer informatie',
+								className: 'is-style-fill',
+							},
+						},
+					],
+					attributes: {
+						className: 'd-row-2-3 t-row-2-3 d-grid-3-6 t-grid-3-6 m-grid-3-5 preview-handles',
+					},
+				},
 			],
 		},
 		attributes: {
-			gutterSize: {
-				type: 'string',
-				default: 'large',
-			},
-			addGutterEnds: {
-				type: 'boolean',
-				default: true,
-			},
-			verticalAlignment: {
-				type: 'string',
-			},
-			...getColumnAttributes( MAX_COLUMNS, DEVICE_BREAKPOINTS ),
 		},
 		edit: editGrid,
 		save: saveGrid,
-	} );
+	});
 
 }
 registerBlock();

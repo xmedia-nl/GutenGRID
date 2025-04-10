@@ -14,21 +14,23 @@ import { InnerBlocks } from '@wordpress/block-editor';
  * Internal dependencies
  */
 
-import { getAsCSS, removeGridClasses, getGutterClasses } from './css-classname';
+import { getAsCSS, removeColumnClasses } from './css-classname';
 
-const save = ( { attributes, innerBlocks } ) => {
+const save = ({ attributes, innerBlocks }) => {
+	const device = attributes.device;
 	const {
 		className,
 	} = attributes;
-	const extra = getAsCSS( innerBlocks.length, attributes );
 	const classes = classnames(
-		removeGridClasses( className ),
-		extra,
-		getGutterClasses( attributes ),
+		removeColumnClasses(className, device),
+		'd-full',
+		't-full',
+		'm-full',
+		'bo-grid',
 	);
 
 	return (
-		<div className={ classes }>
+		<div className={classes}>
 			<InnerBlocks.Content />
 		</div>
 	);

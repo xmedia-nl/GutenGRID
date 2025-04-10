@@ -1,10 +1,7 @@
 import { addFilter } from '@wordpress/hooks';
 import { useSelect, useDispatch } from '@wordpress/data';
 import ResizeGridSingle from '../resize-grid-single';
-import { removeGridClasses } from '../css-classname'
-
-// import { getOffsetForDevice, getSpanForDevice} from '../../constants'
-
+import { removeColumnClasses, replaceColumnValuesInClass } from '../css-classname'
 
 
 
@@ -32,8 +29,10 @@ const withGridResizeHandles = (BlockListBlock) => (props) => {
 		<ResizeGridSingle
 			clientId={clientId}
 			gridWidth={12}
-			onResize={({ direction, delta, start, end, device = 'Desktop' }) => {
-				if (typeof start !== 'number' || typeof end !== 'number' || isNaN(delta)) return;
+			onResize={({ direction, start, end, device = 'Desktop' }) => {
+				if (typeof start !== 'number' || typeof end !== 'number') {
+					return;
+				}
 
 				const prefix = {
 					Desktop: 'd',
@@ -44,23 +43,20 @@ const withGridResizeHandles = (BlockListBlock) => (props) => {
 				let newStart = start;
 				let newEnd = end;
 
-				if (direction === 'left') {
-					newStart = Math.max(1, Math.min(end - 1, start + delta));
-				}
-				if (direction === 'right') {
-					newEnd = Math.min(12, Math.max(start + 1, end + delta));
-				}
-
 				// Fallback
-				if (newStart >= newEnd) return;
-
-				// want to know the type of attributes.className
-				console.log("attributes.className", attributes.className);
-				console.log(typeof attributes.className);
+				if (newStart >= newEnd) {
+					return;
+				}
 
 				const newGridClass = `${prefix}-grid-${newStart}-${newEnd}`;
-				const cleanClass = removeGridClasses(attributes.className || '', device);
-				const newClassName = `${cleanClass} ${newGridClass}`.trim();
+				// const cleanClass = removeColumnClasses(attributes.className || '', device);
+				// const newClassName = `${cleanClass} ${newGridClass}`.trim();
+				const newClassName = replaceColumnValuesInClass(
+					attributes.className || '',
+					device,
+					newStart,
+					newEnd
+				);
 
 				updateBlockAttributes(clientId, {
 					className: newClassName,

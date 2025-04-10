@@ -3,7 +3,9 @@ import classnames from 'classnames';
 // import ResizeHandle from '../resize-grid-single/resize-handle';
 import ResizeHandle from './resize-handle';
 import { useSelect } from '@wordpress/data';
-import { getStartEndFromClassName } from '../css-classname';
+import { getStartEndColFromClassName } from '../css-classname';
+import { detectHoveredCol } from '../utils/bo-grid-check';
+
 
 const ResizeGridSingle = ({
 	// className = '',
@@ -22,6 +24,7 @@ const ResizeGridSingle = ({
 		top: 0,
 		direction: null,
 	});
+	const [hoveredColumn, setHoveredColumn] = useState(null);
 	const className = useSelect((select) => {
 		return select('core/block-editor')
 			.getBlockAttributes(clientId)?.className || '';
@@ -54,9 +57,18 @@ const ResizeGridSingle = ({
 
 		uniqueGridClasses.forEach((cls) => el.classList.add(cls));
 
-		console.log("Applying grid classes to wrapper:", uniqueGridClasses);
-
 	}, [className]);
+
+	useEffect(() => {
+		const handleHoverCol = (e) => {
+			const hovered = e.detail.col;
+			setHoveredColumn(hovered);
+		};
+
+		window.addEventListener('gridHoverColumn', handleHoverCol);
+		return () => window.removeEventListener('gridHoverColumn', handleHoverCol);
+	}, []);
+
 
 	const getMouseX = (event) => {
 		const { clientX, targetTouches } = event;
@@ -74,8 +86,8 @@ const ResizeGridSingle = ({
 			const { width, right, left, top, height } = block.getBoundingClientRect();
 			const parentWidth = block.parentNode?.offsetWidth || 1200;
 			const pixelPerColumn = parentWidth / gridWidth;
-			const { start, end } = getStartEndFromClassName(className, device);
-			console.log("start onMouseDown", start, end);
+			const { start, end } = getStartEndColFromClassName(className, device);
+
 			setDragState({
 				xPos: getMouseX(ev),
 				width,
@@ -89,11 +101,20 @@ const ResizeGridSingle = ({
 
 
 			setResizing(true);
+
+			// Zoek de juiste overlay van dit grid blok
+			const overlay = containerRef.current?.closest('.wp-block-vwe-grid-editor')?.querySelector('.vwe-grid-overlay');
+			if (overlay) {
+				overlay.classList.add('is-resizing');
+			}
+
+
 			const gutenDoc = containerRef.current?.ownerDocument || document;
 			gutenDoc.addEventListener('mousemove', onMouseMove);
 			gutenDoc.addEventListener('mouseup', onMouseUp);
 			ev.preventDefault();
 			ev.stopPropagation();
+
 		}
 	};
 
@@ -102,32 +123,27 @@ const ResizeGridSingle = ({
 		const mouseX = getMouseX(ev);
 
 		setDragState((prev) => {
-			const delta = mouseX - prev.xPos;
-			const spanDelta = Math.round(delta / prev.gridPixelWidth);
+			const hoveredCol = detectHoveredCol(ev.clientX, ev.clientY);
+			if (!onResize || hoveredCol === null) return prev;
 
-			// Alleen activeren bij daadwerkelijke delta
-			if (!onResize || spanDelta === 0) return prev;
-
-			let newStart = prev.start;
-			let newEnd = prev.end;
+			let newStart = Number(prev.start);
+			let newEnd = Number(prev.end);
 
 			if (prev.direction === 'left') {
-				newStart = Math.max(1, Math.min(prev.end - 1, prev.start + spanDelta));
+				newStart = hoveredCol ? hoveredCol : prev.start;
 			}
 			if (prev.direction === 'right') {
-				newEnd = Math.min(12, Math.max(prev.start + 1, prev.end + spanDelta));
+				newEnd = hoveredCol ? hoveredCol+1 : prev.end;
 			}
 
-			// Nu pas onResize met deze actuele waardes
+			
 			onResize({
 				direction: prev.direction,
-				delta: spanDelta,
 				start: newStart,
 				end: newEnd,
-				device: device, // 👈 dit is alles wat je nog moest toevoegen
+				device: device,
 			});
 
-			// Reset de reference point voor de volgende beweging
 			return {
 				...prev,
 				start: newStart,
@@ -135,21 +151,30 @@ const ResizeGridSingle = ({
 				xPos: mouseX,
 			};
 		});
+
 	};
 
+	
 	const onMouseUp = () => {
-		console.log("onMouseUp");
 
 		setResizing(false);
+		const overlay = containerRef.current?.closest('.wp-block-vwe-grid-editor')?.querySelector('.vwe-grid-overlay');
+		if (overlay) {
+			overlay.classList.remove('is-resizing');
+		}
+
 		const gutenDoc = containerRef.current?.ownerDocument || document;
 		gutenDoc.removeEventListener('mousemove', onMouseMove);
 		gutenDoc.removeEventListener('mouseup', onMouseUp);
+		setHoveredColumn(null);
 	};
 
 	const wrapperClasses = classnames(className, {
 		'wp-block-vwe-grid__resizing': resizing,
 		'wp-block-vwe-grid__resizable': true,
 	});
+
+
 
 	return (
 		<div

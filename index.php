@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: GRID – Gutenberg Responsive Interface Designer
+ * Plugin Name: GutenGRID – Gutenberg Responsive Interface Designer
  * Plugin URI:  https://github.com/automattic/block-experiments
  * Description: GutenGRID is a Gutenberg block that gives you full control over layout structure through a CSS Breakout Grid system.
- * Version:     1.0.0
+ * Version:     0.5.0
  * Author:      Xmedia
  * Author URI:  https://xmedia.nl
  * Text Domain: block-experiments

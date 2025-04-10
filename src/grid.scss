@@ -6,9 +6,9 @@
 
 // Output editor specific styles.
 .wp-block-vwe-grid-editor > .block-editor-inner-blocks > .block-editor-block-list__layout {
-	display: grid;
-	grid-gap: 24px;
-	grid-template-columns: $grid-desktop;
+	// display: grid;
+	// grid-gap: 24px;
+	// grid-template-columns: $grid-desktop;
 
 	// Reset inherited negative margins.
 	// These margins are in the block editor to compensate for the 14px block padding on all blocks.
@@ -32,21 +32,21 @@
 	overflow-wrap: break-word; // New standard.
 }
 
-.wp-block-vwe-grid-editor.wp-block-jetpack-layout-gutter__none > .block-editor-inner-blocks > .block-editor-block-list__layout {
-	grid-gap: $grid-gutter-none;
-}
+// .wp-block-vwe-grid-editor.wp-block-jetpack-layout-gutter__none > .block-editor-inner-blocks > .block-editor-block-list__layout {
+// 	grid-gap: $grid-gutter-none;
+// }
 
-.wp-block-vwe-grid-editor.wp-block-jetpack-layout-gutter__small > .block-editor-inner-blocks > .block-editor-block-list__layout {
-	grid-gap: $grid-gutter-small;
-}
+// .wp-block-vwe-grid-editor.wp-block-jetpack-layout-gutter__small > .block-editor-inner-blocks > .block-editor-block-list__layout {
+// 	grid-gap: $grid-gutter-small;
+// }
 
-.wp-block-vwe-grid-editor.wp-block-jetpack-layout-gutter__medium > .block-editor-inner-blocks > .block-editor-block-list__layout {
-	grid-gap: $grid-gutter-medium;
-}
+// .wp-block-vwe-grid-editor.wp-block-jetpack-layout-gutter__medium > .block-editor-inner-blocks > .block-editor-block-list__layout {
+// 	grid-gap: $grid-gutter-medium;
+// }
 
-.wp-block-vwe-grid-editor.wp-block-jetpack-layout-gutter__huge > .block-editor-inner-blocks > .block-editor-block-list__layout {
-	grid-gap: $grid-gutter-huge;
-}
+// .wp-block-vwe-grid-editor.wp-block-jetpack-layout-gutter__huge > .block-editor-inner-blocks > .block-editor-block-list__layout {
+// 	grid-gap: $grid-gutter-huge;
+// }
 
 // Editor grid styles
 .wp-block-vwe-grid-editor {
@@ -56,57 +56,27 @@
 	display: flex;
 	flex-direction: column;
 
-	// @for $i from 1 through 12 {
-	// 	@for $x from 1 through 4 {
-	// 		&.column#{ $x }-grid__start-#{ $i } > .wpcom-resize-grid > .wp-block:nth-child(#{ $x }),
-	// 		&.column#{ $x }-grid__start-#{ $i } > .block-editor-inner-blocks > .block-editor-block-list__layout > .wp-block:nth-child(#{ $x }) {
-	// 			grid-column-start: $i;
-	// 		}
-	// 	}
-	// }
-
-	// @for $i from 1 through 12 {
-	// 	@for $x from 1 through 4 {
-	// 		&.column#{ $x }-grid__span-#{ $i } > .wpcom-resize-grid > .wp-block:nth-child(#{ $x }),
-	// 		&.column#{ $x }-grid__span-#{ $i } > .block-editor-inner-blocks > .block-editor-block-list__layout > .wp-block:nth-child(#{ $x }) {
-	// 			grid-column-end: span $i; // Set it to span $i columns, regardless of starting position.
-	// 		}
-	// 	}
-
-	// 	&.column4-grid__span-#{ $i } > .wpcom-resize-grid > .wp-block:nth-child(5) {
-	// 		grid-column-end: span $i; // The re-resizable module adds extra elements that confuse the calculation in 4 column mode
-	// 	}
-	// }
-
-	// @for $i from 1 through 4 {
-	// 	@for $x from 1 through 4 {
-	// 		&.column#{ $x }-grid__row-#{ $i } > .wpcom-resize-grid > .wp-block:nth-child(#{ $x }),
-	// 		&.column#{ $x }-grid__row-#{ $i } > .block-editor-inner-blocks > .block-editor-block-list__layout > .wp-block:nth-child(#{ $x }) {
-	// 			grid-row-start: $i;
-	// 		}
-	// 	}
-	// }
 }
 
 /**
  * Presets for tablet and mobile - switch the number of columns and layout
  */
 
-.wp-block-vwe-grid-editor.wp-block-jetpack-layout-tablet {
-	.wpcom-overlay-grid,
-	.wpcom-resize-grid,
-	> .block-editor-inner-blocks > .block-editor-block-list__layout {
-		grid-template-columns: $grid-tablet;
-	}
-}
+// .wp-block-vwe-grid-editor.wp-block-jetpack-layout-tablet {
+// 	.wpcom-overlay-grid,
+// 	.wpcom-resize-grid,
+// 	> .block-editor-inner-blocks > .block-editor-block-list__layout {
+// 		grid-template-columns: $grid-tablet;
+// 	}
+// }
 
-.wp-block-vwe-grid-editor.wp-block-jetpack-layout-mobile {
-	.wpcom-overlay-grid,
-	.wpcom-resize-grid,
-	> .block-editor-inner-blocks > .block-editor-block-list__layout {
-		grid-template-columns: $grid-mobile;
-	}
-}
+// .wp-block-vwe-grid-editor.wp-block-jetpack-layout-mobile {
+// 	.wpcom-overlay-grid,
+// 	.wpcom-resize-grid,
+// 	> .block-editor-inner-blocks > .block-editor-block-list__layout {
+// 		grid-template-columns: $grid-mobile;
+// 	}
+// }
 
 // Resize handles.
 .wpcom-overlay-resize__handle,
@@ -181,9 +151,6 @@ $light-opacity-light-800: rgba(#fff, 0.45);
 
 	.components-resizable-box__container .components-resizable-box__handle {
 		display: none !important;
-	}
-	.wp-block{
-		background-color: orange !important;
 	}
 }
 .wp-block-vwe-grid__resizable{

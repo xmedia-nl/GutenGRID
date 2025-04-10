@@ -37,35 +37,60 @@ import { detectBoGridPresence } from './utils/bo-grid-check';
  */
 
 import {
-	getAsEditorCSS,
-	removeGridClasses,
-	getGutterClasses,
+	removeColumnClasses
 } from './css-classname';
-import ColumnIcon from '../icons';
 import {
 	getLayouts,
-	getColumns,
-	DEVICE_BREAKPOINTS,
-	getSpanForDevice,
-	getOffsetForDevice,
-	getGutterValues,
 } from '../constants';
-import { getGridWidth, getDefaultSpan } from './grid-defaults';
-// import ResizeGrid from './resize-grid';
-import LayoutGrid from './layout-grid';
+import { getGridWidth } from './grid-defaults';
 import PreviewDevice from './preview-device';
 import { Notice } from '@wordpress/components';
 
 import {
 	withUpdateAlignment,
-	withUpdateColumns,
 	withSetPreviewDeviceType,
-	withColumns,
-	withColumnAttributes,
 	withPreviewDeviceType,
 } from './higher-order';
-
+import GridOverlay from './grid-overlay';
+import GridAlignControl from './grid-align-control';
 const MINIMUM_RESIZE_SIZE = 50; // Empirically determined to be a good size
+
+const BLOCKS_TEMPLATE = [
+	[
+		'core/heading',
+		{
+			content: 'Lourm Ipsum',
+			className: 'd-row-1 d-grid-2-6 t-grid-2-6 m-grid-2-5',
+			style: {
+				typography: { fontSize: '48px' },
+				color: { text: '#ffffff' },
+			},
+		},
+	],
+	[
+		'core/paragraph',
+		{
+			content: 'Lorem ipsum dolor sit amet...',
+			className: 'd-row-1 d-grid-6-14 t-grid-6-14 m-grid-5-10',
+		},
+	],
+	[
+		'core/buttons',
+		{
+			className: 'd-row-2 d-grid-2-6 t-grid-2-6 m-grid-2-10',
+		},
+		[
+			[
+				'core/button',
+				{
+					text: 'Meer informatie',
+					className: 'is-style-fill',
+				},
+			],
+		],
+	],
+];
+
 
 class Edit extends Component {
 	constructor(props) {
@@ -75,133 +100,34 @@ class Edit extends Component {
 		this.state = {
 			inspectorDeviceType: 'Desktop',
 			viewPort: 'Desktop',
-			hasBoGrid: true, // default = true
+			hasBoGrid: true,
+			hoveredColumn: null,
 		};
 	}
 	componentDidMount() {
 		const hasGrid = detectBoGridPresence();
 		this.setState({ hasBoGrid: hasGrid });
+		this.addEditorGridClasses();
+
 	}
-	/*
-	 * Change the layout (number of columns), resetting everything to the default
-	 */
-	onChangeLayout = (columns) => {
-		const columnValues = {};
+	componentDidUpdate() {
+		this.addEditorGridClasses();
+	}
+	componentWillUnmount() {
+	}
+	addEditorGridClasses = () => {
+		const container = this.overlayRef.current;
+		if (!container) return;
 
-		for (let pos = 0; pos < columns; pos++) {
-			for (
-				let device = 0;
-				device < DEVICE_BREAKPOINTS.length;
-				device++
-			) {
-				const defaultSpan = getDefaultSpan(
-					DEVICE_BREAKPOINTS[device],
-					columns,
-					pos
-				);
+		const innerBlocksLayout = container.querySelector('.block-editor-block-list__layout');
+		if (!innerBlocksLayout) return;
 
-				columnValues[
-					getSpanForDevice(pos, DEVICE_BREAKPOINTS[device])
-				] = defaultSpan;
-				columnValues[
-					getOffsetForDevice(pos, DEVICE_BREAKPOINTS[device])
-				] = 0;
+		['d-full', 't-full', 'm-full', 'bo-grid'].forEach((cls) => {
+			if (!innerBlocksLayout.classList.contains(cls)) {
+				innerBlocksLayout.classList.add(cls);
 			}
-		}
-
-		this.props.updateColumns(this.props.columns, columns, columnValues);
-	};
-
-	onResize = (column, adjustment) => {
-		const { attributes, columns } = this.props;
-		const grid = new LayoutGrid(
-			attributes,
-			this.getPreviewMode(),
-			columns
-		);
-		const adjustedGrid = grid.getAdjustedGrid(column, adjustment);
-
-		if (adjustedGrid) {
-			this.adjustGrid(adjustedGrid);
-		}
-	};
-
-	onChangeSpan = (column, device, value) => {
-		const { attributes, columns } = this.props;
-		const grid = new LayoutGrid(attributes, device, columns);
-		const adjustedGrid = grid.getAdjustedGrid(column, {
-			span: parseInt(value, 10),
 		});
-
-		if (adjustedGrid) {
-			this.adjustGrid(adjustedGrid);
-		}
 	};
-
-	onChangeOffset = (column, device, value) => {
-		const { attributes, columns } = this.props;
-		const grid = new LayoutGrid(attributes, device, columns);
-		const adjustedGrid = grid.getAdjustedGrid(column, {
-			start: grid.convertOffsetToStart(column, parseInt(value, 10)),
-		});
-
-		if (adjustedGrid) {
-			this.adjustGrid(adjustedGrid);
-		}
-	};
-
-	adjustGrid(grid) {
-		const { setAttributes, attributes } = this.props;
-		const device = this.getPreviewMode();
-		setAttributes({
-			...grid,
-			className: removeGridClasses(attributes.className, device),
-		});
-	}
-
-	renderDeviceSettings(columns, device, attributes) {
-		const grid = new LayoutGrid(attributes, device, this.props.columns);
-		const settings = [];
-
-		for (let column = 0; column < columns; column++) {
-			const span =
-				grid.getSpan(column) ||
-				getDefaultSpan(device, columns, column);
-			const offset = grid.getOffset(column) || 0;
-
-			settings.push(
-				<div className="vwe-grid-settings" key={column}>
-					<strong>
-						{__('Column', 'layout-grid')} {column + 1}
-					</strong>
-					<div className="vwe-grid-settings__group">
-						<TextControl
-							type="number"
-							label={__('Offset', 'layout-grid')}
-							value={offset || 0}
-							min={0}
-							max={getGridWidth(device) - 1}
-							onChange={(value) =>
-								this.onChangeOffset(column, device, value)
-							}
-						/>
-						<TextControl
-							type="number"
-							label={__('Span', 'layout-grid')}
-							value={span}
-							min={1}
-							max={getGridWidth(device)}
-							onChange={(value) =>
-								this.onChangeSpan(column, device, value)
-							}
-						/>
-					</div>
-				</div>
-			);
-		}
-
-		return settings;
-	}
 
 	canResizeBreakpoint(device) {
 		if (this.overlayRef && this.overlayRef.current) {
@@ -248,7 +174,9 @@ class Edit extends Component {
 		// Return something appropriate for the viewport (mobile or tablet)
 		return this.state.inspectorDeviceType;
 	}
-
+	handleGridHover = (e) => {
+		this.setState({ hoveredColumn: e.detail.col });
+	};
 	render() {
 		const {
 			className,
@@ -262,21 +190,15 @@ class Edit extends Component {
 		const { viewPort } = this.state;
 		const previewMode = this.getPreviewMode();
 		const inspectorDeviceType = this.getInspectorMode();
-		const extra = getAsEditorCSS(
-			previewMode,
-			columns,
-			attributes,
-			columnAttributes
-		);
-		const { gutterSize, addGutterEnds, verticalAlignment } = attributes;
-		const layoutGrid = new LayoutGrid(attributes, previewMode, columns);
+
+		const { verticalAlignment } = attributes;
+		// const layoutGrid = new LayoutGrid(attributes, previewMode, columns);
 		const classes = classnames(
-			removeGridClasses(className, previewMode).replace(
+			removeColumnClasses(className, previewMode).replace(
 				'layout-grid',
 				'layout-grid-editor'
 			),
 			'wp-block-vwe-grid-editor',
-			extra,
 			{
 				'wp-block-jetpack-layout-tablet': previewMode === 'Tablet',
 				'wp-block-jetpack-layout-desktop': previewMode === 'Desktop',
@@ -286,61 +208,9 @@ class Edit extends Component {
 				),
 				[`are-vertically-aligned-${verticalAlignment}`]: verticalAlignment,
 			},
-			getGutterClasses(attributes)
 		);
 
-		if (columns === 0) {
-			return (
-				<Placeholder
-					icon="layout"
-					label={__('Choose Layout', 'layout-grid')}
-					instructions={__(
-						'Select a layout to start with:',
-						'layout-grid'
-					)}
-					className={classes}
-				>
-					<ul className="block-editor-inner-blocks__template-picker-options">
-						{getColumns().map((column) => (
-							<li key={column.value}>
-								<IconButton
-									isSecondary
-									icon={
-										<ColumnIcon columns={column.value} />
-									}
-									onClick={() =>
-										this.onChangeLayout(column.value)
-									}
-									className="block-editor-inner-blocks__template-picker-option"
-									label={column.label}
-								/>
-							</li>
-						))}
-					</ul>
-				</Placeholder>
-			);
-		}
 
-		const toggleControl = (
-			<ToggleControl
-				label={__('Add end gutters', 'layout-grid')}
-				help={
-					addGutterEnds
-						? __(
-							'Toggle off to remove the spacing left and right of the grid.',
-							'layout-grid'
-						)
-						: __(
-							'Toggle on to add space left and right of the layout grid. ',
-							'layout-grid'
-						)
-				}
-				checked={addGutterEnds}
-				onChange={(newValue) =>
-					setAttributes({ addGutterEnds: newValue })
-				}
-			/>
-		);
 
 		return (
 			<>
@@ -354,7 +224,8 @@ class Edit extends Component {
 					}
 				/>
 
-				<div className={classes} >
+				<div className={classes} ref={this.overlayRef}>
+					<GridOverlay device={previewMode} />
 					{!this.state.hasBoGrid && (
 						<Notice status="warning" isDismissible={false}>
 							<strong>{__('BO Grid missing', 'layout-grid')}</strong>
@@ -368,58 +239,13 @@ class Edit extends Component {
 					)}
 
 					<InnerBlocks
-						template={null}
+						template={BLOCKS_TEMPLATE}
 						templateLock={false}
 						allowedBlocks={undefined}
 					/>
 				</div>
 
 				<InspectorControls>
-					<PanelBody title={__('Layout', 'layout-grid')}>
-						<div className="vwe-grid-columns block-editor-block-styles">
-							{getColumns().map((column) => (
-								<div
-									key={column.value}
-									className={classnames(
-										'block-editor-block-styles__item',
-										{
-											'is-active': columns === column.value,
-										}
-									)}
-									onClick={() =>
-										this.onChangeLayout(column.value)
-									}
-									onKeyDown={(event) => {
-										if (
-											ENTER === event.keyCode ||
-											SPACE === event.keyCode
-										) {
-											event.preventDefault();
-											this.onChangeLayout(column.value);
-										}
-									}}
-									role="button"
-									tabIndex="0"
-									aria-label={column.label}
-								>
-									<div className="block-editor-block-styles__item-preview">
-										<ColumnIcon columns={column.value} />
-									</div>
-									<div className="editor-block-styles__item-label block-editor-block-styles__item-label">
-										{column.label}
-									</div>
-								</div>
-							))}
-						</div>
-
-						<p className="vwe-grid-help">
-							{__(
-								'Changing the number of columns will reset your layout and could remove content.',
-								'layout-grid'
-							)}
-						</p>
-					</PanelBody>
-
 					<PanelBody title={__('Responsive Breakpoints', 'layout-grid')}>
 						<p className="vwe-grid-help">
 							{__(
@@ -443,36 +269,9 @@ class Edit extends Component {
 							))}
 						</ButtonGroup>
 
-						{this.renderDeviceSettings(
-							columns,
-							inspectorDeviceType,
-							attributes
-						)}
 					</PanelBody>
 
-					<PanelBody title={__('Gutter', 'layout-grid')}>
-						<p>{__('Gutter size', 'layout-grid')}</p>
 
-						<SelectControl
-							value={gutterSize}
-							onChange={(newValue) =>
-								setAttributes({
-									gutterSize: newValue,
-									addGutterEnds:
-										newValue === 'none'
-											? false
-											: addGutterEnds,
-								})
-							}
-							options={getGutterValues()}
-						/>
-
-						{gutterSize === 'none' ? (
-							<Disabled>{toggleControl}</Disabled>
-						) : (
-							toggleControl
-						)}
-					</PanelBody>
 				</InspectorControls>
 
 				<BlockControls>
@@ -501,9 +300,6 @@ function MaybeDisabledEdit(props) {
 
 export default compose([
 	withUpdateAlignment(),
-	withUpdateColumns(),
 	withSetPreviewDeviceType(),
-	withColumns(),
-	withColumnAttributes(),
 	withPreviewDeviceType(),
 ])(MaybeDisabledEdit);

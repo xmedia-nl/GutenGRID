@@ -12,6 +12,7 @@
 	// By being relative when unselected and absolute when selected, we
 	// constantly "refresh" this hack.
 	position: relative;
+
 	.is-selected & {
 		position: absolute;
 	}
@@ -21,28 +22,29 @@
 	bottom: 0;
 	right: 0;
 
-	> .wpcom-overlay-grid__inner {
+	>.wpcom-overlay-grid__inner {
 		top: 0;
 		left: 0;
 		bottom: 0;
 		right: 0;
 		display: grid;
-		grid-gap: $grid-gutter;
-		grid-template-columns: $grid-desktop;
+		// grid-gap: $grid-gutter;
+		// grid-template-columns: $grid-desktop;
 		height: 100%;
-
+		background-color: purple;
 		// This padding adds end gutters.
-		padding-left: $grid-gutter;
-		padding-right: $grid-gutter;
+		// padding-left: $grid-gutter;
+		// padding-right: $grid-gutter;
 
 		// Lower the z-index so it's under the block borders.
 		z-index: 0;
 	}
 
 	// Colorize for dark themes also.
-	color: rgba(0,0,0,0.03);
+	color: rgba(0, 0, 0, 0.03);
+
 	.is-dark-theme & {
-		color: rgba(255,255,255,0.15);
+		color: rgba(255, 255, 255, 0.15);
 	}
 
 	// Solid gutter shading.
@@ -52,94 +54,57 @@
 		// Default gutter.
 		.is-selected & {
 			box-shadow:
-			-($grid-gutter / 2) 0 0 0 currentColor,
-			($grid-gutter / 2) 0 0 0 currentColor;
+				-(24px / 2) 0 0 0 currentColor,
+				(24px / 2) 0 0 0 currentColor;
 		}
 
-		// No gutter.
-		.wp-block-jetpack-layout-gutter__none & {
-			.is-selected & {
-				box-shadow:
-				-1px 0 0 0 currentColor,
-				1px 0 0 0 currentColor;
-			}
-		}
 
-		// Small gutter.
-		.wp-block-jetpack-layout-gutter__small & {
-			.is-selected & {
-				box-shadow:
-				-($grid-gutter-small / 2) 0 0 0 currentColor,
-				($grid-gutter-small / 2) 0 0 0 currentColor;
-			}
-		}
-
-		// Medium gutter.
-		.wp-block-jetpack-layout-gutter__medium & {
-			.is-selected & {
-				box-shadow:
-				-($grid-gutter-medium / 2) 0 0 0 currentColor,
-				($grid-gutter-medium / 2) 0 0 0 currentColor;
-			}
-		}
-
-		// Huge gutter.
-		.wp-block-jetpack-layout-gutter__huge & {
-			.is-selected & {
-				box-shadow:
-				-($grid-gutter-huge / 2) 0 0 0 currentColor,
-				($grid-gutter-huge / 2) 0 0 0 currentColor;
-			}
-		}
 	}
 }
 
 // End gutters and gap.
 .wpcom-overlay-grid {
-	box-shadow:
-	inset -#{ $grid-gutter-large / 2 } 0 0 0 currentColor,
-	inset #{ $grid-gutter-large / 2 } 0 0 0 currentColor;
+	box-shadow: inset -#{ 24px / 2 } 0 0 0 currentColor,
+	inset #{ 24px / 2 } 0 0 0 currentColor;
 }
 
-.wp-block-jetpack-layout-gutter__none .wpcom-overlay-grid {
-	grid-gap: $grid-gutter-none;
-	padding-left: $grid-gutter;
-	padding-right: $grid-gutter;
+
+
+[data-type="vwe/grid"]:not(.is-selected) {
+	.vwe-grid-overlay {
+		display: none;
+	}
 }
 
-.wp-block-jetpack-layout-gutter__small .wpcom-overlay-grid {
-	grid-gap: $grid-gutter-small;
-	padding-left: $grid-gutter-small;
-	padding-right: $grid-gutter-small;
-
-	box-shadow:
-	inset -#{ $grid-gutter-small / 2 } 0 0 0 currentColor,
-	inset #{ $grid-gutter-small / 2 } 0 0 0 currentColor;
+.vwe-grid-overlay {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	pointer-events: none;
+	display: grid;
+	z-index: 10;
+	align-content: stretch !important;
 }
 
-.wp-block-jetpack-layout-gutter__medium .wpcom-overlay-grid {
-	grid-gap: $grid-gutter-medium;
-	padding-left: $grid-gutter-medium;
-	padding-right: $grid-gutter-medium;
 
-	box-shadow:
-	inset -#{ $grid-gutter-medium / 2 } 0 0 0 currentColor,
-	inset #{ $grid-gutter-medium / 2 } 0 0 0 currentColor;
-}
 
-.wp-block-jetpack-layout-gutter__huge .wpcom-overlay-grid {
-	grid-gap: $grid-gutter-huge;
-	padding-left: $grid-gutter-huge;
-	padding-right: $grid-gutter-huge;
+.vwe-grid-overlay.is-resizing {
+	z-index: 9999;
+	pointer-events: all;
 
-	box-shadow:
-	inset -#{ $grid-gutter-huge / 2 } 0 0 0 currentColor,
-	inset #{ $grid-gutter-huge / 2 } 0 0 0 currentColor;
-}
+	.vwe-grid-overlay__col {
+		background-color: rgb(189 189 189 / 20%);
+		width: 100%;
+		height: 100%;
+		display: block;
+		position: relative;
 
-.wp-block-jetpack-layout-gutter__nowrap .wpcom-overlay-grid {
-	padding-left: $grid-gutter-none;
-	padding-right: $grid-gutter-none;
-
-	box-shadow: none;
+		// &.is-hovered {
+		// 	background-color: rgb(189 189 189 / 50%);
+		// }
+	}
 }

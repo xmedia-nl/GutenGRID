@@ -3,52 +3,6 @@
  */
 import { withSelect, withDispatch } from '@wordpress/data';
 
-/**
- * WordPress dependencies
- */
-import { createBlock } from '@wordpress/blocks';
-
-/**
- * Internal dependencies
- */
-import { removeGridClasses } from './css-classname';
-
-function getColumnBlocks( currentBlocks, previous, columns ) {
-	if ( columns > previous ) {
-		// Add new blocks to the end
-		return [
-			...currentBlocks,
-			...Array.from( { length: columns - previous }, () =>
-				createBlock( 'core/heading' )
-			),
-		];
-	}
-
-	// A little ugly but... ideally we remove empty blocks first, and then anything with content from the end
-	let cleanedBlocks = [ ...currentBlocks ];
-	let totalRemoved = 0;
-
-	// Reverse the blocks so we start at the end. This happens in-place
-	cleanedBlocks.reverse();
-
-	// Remove empty blocks
-	cleanedBlocks = cleanedBlocks.filter( ( block ) => {
-		if (
-			totalRemoved < previous - columns &&
-			block.innerBlocks.length === 0
-		) {
-			totalRemoved++;
-			return false;
-		}
-
-		return true;
-	} );
-
-	// If we still need to remove blocks then do them from the beginning before flipping it back round
-	return cleanedBlocks
-		.slice( Math.max( 0, previous - columns - totalRemoved ) )
-		.reverse();
-}
 
 function isSiteEditor() {
 	const siteEditorWrapper = document.querySelector( '#edit-site-editor' );
@@ -89,39 +43,6 @@ export function withUpdateAlignment() {
 	} );
 }
 
-export function withUpdateColumns() {
-	return withDispatch( ( dispatch, ownProps, registry ) => {
-		return {
-			updateColumns( previous, columns, columnValues ) {
-				const { clientId } = ownProps;
-				const { replaceBlock } = dispatch( 'core/block-editor' );
-				const { getBlocks } = registry.select( 'core/block-editor' );
-				const innerBlocks = getColumnBlocks(
-					getBlocks( clientId ),
-					previous,
-					columns
-				);
-
-				// Replace the whole block with a new one so that our changes to both the attributes and innerBlocks are atomic
-				// This ensures that the undo history has a single entry, preventing traversing to a 'half way' point where innerBlocks are changed
-				// but the column attributes arent
-				const blockCopy = createBlock(
-					ownProps.name,
-					{
-						...ownProps.attributes,
-						...columnValues,
-						className: removeGridClasses(
-							ownProps.attributes.className
-						),
-					},
-					innerBlocks
-				);
-
-				replaceBlock( clientId, blockCopy );
-			},
-		};
-	} );
-}
 
 export function withSetPreviewDeviceType() {
 	return withDispatch( ( dispatch ) => {
@@ -141,30 +62,6 @@ export function withSetPreviewDeviceType() {
 	} );
 }
 
-export function withColumns() {
-	return withSelect( ( select, { clientId } ) => {
-		const { getBlockCount } = select( 'core/block-editor' );
-
-		return {
-			columns: getBlockCount( clientId ),
-		};
-	} );
-}
-
-export function withColumnAttributes() {
-	return withSelect( ( select, { clientId } ) => {
-		const { getBlockOrder, getBlocksByClientId } = select(
-			'core/block-editor'
-		);
-
-		return {
-			columnAttributes: getBlockOrder( clientId ).map(
-				( innerBlockClientId ) =>
-					getBlocksByClientId( innerBlockClientId )[ 0 ].attributes
-			),
-		};
-	} );
-}
 
 export function withPreviewDeviceType() {
 	return withSelect( ( select ) => {

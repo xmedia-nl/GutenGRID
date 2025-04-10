@@ -19,13 +19,14 @@
 }
 
 // 2. Reset margins on immediate innerblocks container.
-[data-type="vwe/grid"] > .block-editor-block-list__block-edit > [data-block] {
+[data-type="vwe/grid"]>.block-editor-block-list__block-edit>[data-block] {
 	margin-top: 0;
 	margin-bottom: 0;
 }
 
 // 3. Unset margins and paddings for column container.
-.wp-block-vwe-grid-editor [data-type="vwe/grid-column"].wp-block { // Selector needs specificity to override.
+.wp-block-vwe-grid-editor [data-type="vwe/grid-column"].wp-block {
+	// Selector needs specificity to override.
 	margin: 0;
 	padding-left: 0;
 	padding-right: 0;
@@ -62,7 +63,7 @@
 
 	// Fit available space.
 	// @todo: keep an eye on this element. It appears to be commonly refactored.
-	> div,
+	>div,
 	.is-block-content {
 		width: 100%;
 	}
@@ -103,7 +104,7 @@
 	}
 }
 
-.components-button-group + .vwe-grid-settings {
+.components-button-group+.vwe-grid-settings {
 	margin-top: 16px;
 }
 
@@ -133,7 +134,7 @@
 /**
  * Placeholder options
  */
- 
+
 .wp-block-vwe-grid-editor .block-editor-inner-blocks__template-picker-options {
 	display: flex;
 	flex-direction: row;
@@ -150,7 +151,7 @@
 		list-style: none;
 	}
 
-	> li .components-button {
+	>li .components-button {
 		list-style: none;
 		flex-shrink: 1;
 		max-width: 72px;
@@ -174,6 +175,7 @@
 	// New vertical appearance.
 	.wpcom-overlay-resize__handle .components-resizable-box__side-handle,
 	.wp-blocks-vwe-grid__resize-handles .components-resizable-box__side-handle {
+
 		// Make the circle a pill shape instead.
 		&::after {
 			width: 8px;
@@ -202,7 +204,7 @@
 
 		.wpcom-overlay-resize__handle .components-resizable-box__side-handle.components-resizable-box__handle-right,
 		.wp-blocks-vwe-grid__resize-handles .components-resizable-box__side-handle.components-resizable-box__handle-right {
-				right: 0;
+			right: 0;
 
 			&::before,
 			&::after {
@@ -249,26 +251,41 @@
 		align-self: flex-end;
 	}
 
-	// Note we add the alignment on the parent block as the editor nesting means it's not possible to affect the grid
-	@for $x from 1 through 4 {
-		&.column#{ $x }-grid__valign-top [data-type="vwe/grid-column"].wp-block:nth-child(#{ $x }) {
-			align-self: flex-start;
+}
+
+
+.has-preview-style {
+	.block-editor-inner-blocks{
+		grid-column: 1/-1 !important;
+		
+	}
+	.preview-col{
+		height:100%;
+	}
+	.preview-handles{
+		border-left:2px solid rgb(125, 125, 255);
+		border-right:2px solid rgb(125, 125, 255);
+		position: relative;
+		&::before{
+			content: '';
+			position: absolute;
+			top: calc(50% - 7px);
+			bottom: 0;
+			left: -2px;
+			width: 2px;
+			height: 15px;
+			background-color: blue;
 		}
-		&.column#{ $x }-grid__valign-center [data-type="vwe/grid-column"].wp-block:nth-child(#{ $x }) {
-			align-self: center;
-		}
-		&.column#{ $x }-grid__valign-bottom [data-type="vwe/grid-column"].wp-block:nth-child(#{ $x }) {
-			align-self: flex-end;
+		&::after{
+			content: '';
+			position: absolute;
+			top: calc(50% - 7px);
+			bottom: 0;
+			right: -2px;
+			width: 2px;
+			height: 15px;
+			background-color: blue;
 		}
 	}
 }
 
-/**
- * Image alignment for the editor
- */
-
-.wp-block[data-align=right] {
-    > .wp-block-image {
-        float: right;
-    }
-}

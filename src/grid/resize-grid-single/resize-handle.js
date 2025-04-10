@@ -30,7 +30,7 @@ const ResizeHandle = ( { direction, height, xPos, top, isSelected } ) => {
 	return (
 		<div className={ classes } style={ wrapStyle }>
 			<span>
-				<div className={ handleClasses } style={ dragStyle }></div>
+				{/* <div className={ handleClasses } style={ dragStyle }></div> */}
 			</span>
 		</div>
 	);
