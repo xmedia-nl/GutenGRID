@@ -4,7 +4,7 @@
  * Plugin Name: GutenGRID – Gutenberg Responsive Interface Designer
  * Plugin URI:  https://github.com/automattic/block-experiments
  * Description: GutenGRID is a Gutenberg block that gives you full control over layout structure through a CSS Breakout Grid system.
- * Version:     0.5.0
+ * Version:     0.5.1
  * Author:      Xmedia
  * Author URI:  https://xmedia.nl
  * Text Domain: gutengrid
@@ -50,7 +50,6 @@ add_action('init', function () {
         'editor_script' => 'gutengrid-editor-script',
         'style' => 'gutengrid-style',
         'editor_style' => 'gutengrid-editor-style',
-        'render_callback' => 'gutengrid_render_grid_block',
     ]);
 });
 
@@ -72,27 +71,23 @@ function gutengrid_load_textdomain()
 }
 add_action('init', 'gutengrid_load_textdomain');
 
+add_filter('render_block', 'gutengrid_apply_wrapper_classes', 10, 3);
 
-function gutengrid_render_grid_block($attributes, $content, $block)
-{
-    if (empty($block->inner_blocks)) {
-        return $content;
+function gutengrid_apply_wrapper_classes($block_content, $block, $instance) {
+    if (empty($block['attrs']['wrapperClassname'])) {
+        return $block_content;
     }
-    $parsed_content = '';
-    $wrapper = '<div class="%s grid-block-wrapper">%s</div>';
-    foreach ($block->inner_blocks as $inner) {
-        $block_html = $inner->render();
-        $wrapper_class = $inner->parsed_block['attrs']['wrapperClassname'] ?? '';
-        
-        if (!empty($wrapper_class)) {
-            $parsed_content .= sprintf(
-                $wrapper,
-                $wrapper_class,
-                $block_html
-            );
-        } else {
-            $parsed_content .= $block_html;
-        }
+
+    // Check of class al in de HTML zit
+    $class = $block['attrs']['wrapperClassname'];
+    if (strpos($block_content, $class) !== false) {
+        return $block_content;
     }
-    return $parsed_content;
+
+    // Voeg de wrapper toe
+    return sprintf(
+        '<div class="%s grid-block-wrapper">%s</div>',
+        esc_attr($class),
+        $block_content
+    );
 }

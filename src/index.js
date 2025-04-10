@@ -46,7 +46,6 @@ import editGrid from './grid/edit';
 import saveGrid from './grid/save';
 import { GridIcon } from './icons';
 
-console.log(__('Testing translation load', 'gutengrid'));
 
 export function registerBlock() {
 	console.debug('registerBlock');
