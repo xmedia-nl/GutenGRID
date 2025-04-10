@@ -59,7 +59,7 @@ const GridPositionControl = ({ clientId }) => {
 	const colMax = getGridWidth(device);
 
 	return (
-		<div className="vwe-grid-controls">
+		<div className="gutengrid-controls">
 			<NumberControl
 				label={__('Column start', 'gutengrid')}
 				value={colStart}

@@ -8,11 +8,11 @@ import GridAlignControl from '../components/grid-align-control';
 const withGridAlignControls = createHigherOrderComponent((BlockEdit) => (props) => {
 	const { clientId, name, isSelected } = props;
 
-	// Check of dit een child is van een vwe/grid
+	// Check of dit een child is van een gutengrid/grid
 	const parentIsGrid = useSelect((select) => {
 		const parentId = select('core/block-editor').getBlockRootClientId(clientId);
 		const parentBlock = select('core/block-editor').getBlock(parentId);
-		return parentBlock?.name === 'vwe/grid';
+		return parentBlock?.name === 'gutengrid/grid';
 	}, [clientId]);
 
 	if (!isSelected || !parentIsGrid) {
@@ -34,6 +34,6 @@ const withGridAlignControls = createHigherOrderComponent((BlockEdit) => (props) 
 
 addFilter(
 	'editor.BlockEdit',
-	'vwe/grid-align-controls',
+	'gutengrid/grid-align-controls',
 	withGridAlignControls
 );

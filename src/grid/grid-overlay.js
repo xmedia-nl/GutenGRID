@@ -10,11 +10,11 @@ const GridOverlay = ({ device }) => {
     const overlayRef = useRef();
 
     return (
-        <div className="vwe-grid-overlay bo-grid" ref={overlayRef}>
+        <div className="gutengrid-overlay bo-grid" ref={overlayRef}>
             {Array.from({ length: columns }).map((_, i) => (
                 <div
                     key={i}
-                    className={`vwe-grid-overlay__col d-grid-${i + 1}-${i + 1} t-grid-${i + 1}-${i + 1} m-grid-${i + 1}-${i + 1}`}
+                    className={`gutengrid-overlay__col d-grid-${i + 1}-${i + 1} t-grid-${i + 1}-${i + 1} m-grid-${i + 1}-${i + 1}`}
                     data-col={i + 1}
                 />
             ))}

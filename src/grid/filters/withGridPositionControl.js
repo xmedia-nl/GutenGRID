@@ -16,7 +16,7 @@ const withGridPositionControl = createHigherOrderComponent((BlockEdit) => (props
     const parentIsGrid = useSelect((select) => {
         const parentId = select('core/block-editor').getBlockRootClientId(clientId);
         const parentBlock = select('core/block-editor').getBlock(parentId);
-        return parentBlock?.name === 'vwe/grid';
+        return parentBlock?.name === 'gutengrid/grid';
     }, [clientId]);
 
     const currentDevice = useSelect((select) => {
@@ -41,7 +41,7 @@ const withGridPositionControl = createHigherOrderComponent((BlockEdit) => (props
             <BlockEdit {...props} />
             <InspectorControls>
                 <PanelBody title={__('Responsive Breakpoints', 'gutengrid')}>
-                    <p className="vwe-grid-help">
+                    <p className="gutengrid-help">
                         {__(
                             "Previewing your post will show your browser's breakpoint, not the currently selected one.",
                             'gutengrid'
@@ -71,6 +71,6 @@ const withGridPositionControl = createHigherOrderComponent((BlockEdit) => (props
 // export default withGridPositionControl;
 addFilter(
     'editor.BlockEdit',
-    'vwe/grid-position-controls',
+    'gutengrid/grid-position-controls',
     withGridPositionControl
 );

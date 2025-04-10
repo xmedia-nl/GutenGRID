@@ -103,7 +103,7 @@ const ResizeGridSingle = ({
 			setResizing(true);
 
 			// Zoek de juiste overlay van dit grid blok
-			const overlay = containerRef.current?.closest('.wp-block-vwe-grid-editor')?.querySelector('.vwe-grid-overlay');
+			const overlay = containerRef.current?.closest('.wp-block-gutengrid-editor')?.querySelector('.gutengrid-overlay');
 			if (overlay) {
 				overlay.classList.add('is-resizing');
 			}
@@ -158,7 +158,7 @@ const ResizeGridSingle = ({
 	const onMouseUp = () => {
 
 		setResizing(false);
-		const overlay = containerRef.current?.closest('.wp-block-vwe-grid-editor')?.querySelector('.vwe-grid-overlay');
+		const overlay = containerRef.current?.closest('.wp-block-gutengrid-editor')?.querySelector('.gutengrid-overlay');
 		if (overlay) {
 			overlay.classList.remove('is-resizing');
 		}
@@ -170,8 +170,8 @@ const ResizeGridSingle = ({
 	};
 
 	const wrapperClasses = classnames(className, {
-		'wp-block-vwe-grid__resizing': resizing,
-		'wp-block-vwe-grid__resizable': true,
+		'wp-block-gutengrid__resizing': resizing,
+		'wp-block-gutengrid__resizable': true,
 	});
 
 
@@ -195,7 +195,7 @@ const ResizeGridSingle = ({
 			)}
 
 			{/* Static resize handles */}
-			<span className="wp-blocks-vwe-grid__resize-handles">
+			<span className="wp-blocks-gutengrid__resize-handles">
 				<div
 					className="components-resizable-box__handle components-resizable-box__side-handle components-resizable-box__handle-right"
 					data-resize-right

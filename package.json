@@ -1,7 +1,7 @@
 {
-  "name": "vwe-grid",
+  "name": "gutengrid",
   "version": "1.0.0",
-  "description": "A grid plugin for Gutenberg compatible with VWE THEME",
+  "description": "A grid plugin for Gutenberg compatible with gutengrid THEME",
   "license": "ISC",
   "author": "",
   "main": "build/index.js",

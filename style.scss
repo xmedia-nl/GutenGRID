@@ -9,8 +9,8 @@
  * Individual Column Options
  */
 
-.wp-block-vwe-grid-editor .wp-block-vwe-grid-column,
-.wp-block-vwe-grid .wp-block-vwe-grid-column {
+.wp-block-gutengrid-editor .wp-block-gutengrid-column,
+.wp-block-gutengrid .wp-block-gutengrid-column {
 
 	// When a column has a background color, we add negative margins to enable
 	// some of the gutter to work as default padding.
@@ -27,7 +27,7 @@
 
 	// Additional, user-set paddings.
 	// Apply both gutter padding and user-set padding, when a background is also set.
-	&.wp-block-vwe-grid__padding-none {
+	&.wp-block-gutengrid__padding-none {
 		padding: 0px;
 
 		&.has-background {
@@ -46,7 +46,7 @@
  * Parent column alignment
  */
 
-.wp-block-vwe-grid {
+.wp-block-gutengrid {
 	&.are-vertically-aligned-top {
 		align-items: flex-start;
 	}
@@ -65,7 +65,7 @@
  * Individual column alignment
  */
 
-.wp-block-vwe-grid-column {
+.wp-block-gutengrid-column {
 
 	// Allow top-aligned columns to span the full height.
 	&.is-vertically-aligned-top {
@@ -88,7 +88,7 @@
  */
 
 /* autoprefixer grid: no-autoplace */
-.wp-block-vwe-grid {
+.wp-block-gutengrid {
 	// display: grid;
 	// grid-gap: $grid-gutter;
 	// grid-template-columns: $grid-mobile;
@@ -108,7 +108,7 @@
 	// }
 
 	// Ensure long lines wrap in themes that don't already enforce this
-	.wp-block-vwe-grid-column * {
+	.wp-block-gutengrid-column * {
 		word-break: break-word;
 		word-wrap: break-word;
 	}
@@ -116,7 +116,7 @@
 }
 
 // Ensure inner blocks with deliberate overflows are still constrained to column.
-.wp-block-vwe-grid-column {
+.wp-block-gutengrid-column {
 	max-width: 100%;
 }
 

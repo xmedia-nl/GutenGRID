@@ -18,7 +18,7 @@ export function detectHoveredCol(clientX, clientY) {
 	if (iframe && iframe.contentDocument) {
 	
 		const els = iframe.contentDocument.elementsFromPoint(clientX, clientY);
-		const hoveredCol = Array.from(els).find(el => el.classList?.contains('vwe-grid-overlay__col'));
+		const hoveredCol = Array.from(els).find(el => el.classList?.contains('gutengrid-overlay__col'));
 		if (hoveredCol) {
 			return Number(hoveredCol.dataset.col);
 		}
@@ -26,7 +26,7 @@ export function detectHoveredCol(clientX, clientY) {
 	}
 
 	const els = document.elementsFromPoint(clientX, clientY);
-	const hoveredCol = els.find(el => el.classList?.contains('vwe-grid-overlay__col'));
+	const hoveredCol = els.find(el => el.classList?.contains('gutengrid-overlay__col'));
 	if (hoveredCol) {
 		return Number(hoveredCol.dataset.col);
 	}

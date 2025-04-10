@@ -4,7 +4,7 @@
  * Resize grid overlay
  */
 
-.wp-block-vwe-grid-editor .wpcom-resize-grid {
+.wp-block-gutengrid-editor .wpcom-resize-grid {
 	user-select: none;
 	position: absolute;
 	top: 0;
@@ -34,14 +34,14 @@
 	z-index: 121;
 }
 
-body.is-resizing [data-type="vwe/grid"] {
+body.is-resizing [data-type="gutengrid/grid"] {
 	overflow: inherit;
 }
 
 // new stuff
 
 
-.wp-blocks-vwe-grid__resize-handles {
+.wp-blocks-gutengrid__resize-handles {
 	position: absolute;
 	top: 0;
 	right: 0;
@@ -50,7 +50,7 @@ body.is-resizing [data-type="vwe/grid"] {
 	pointer-events: none;
 }
 
-.wp-blocks-vwe-grid__resize-handles > div {
+.wp-blocks-gutengrid__resize-handles > div {
 	position: absolute;
 	width: 10px;
 	height: 100%;
@@ -60,10 +60,10 @@ body.is-resizing [data-type="vwe/grid"] {
 	cursor: ew-resize;
 }
 
-.wp-blocks-vwe-grid__resize-handles .components-resizable-box__handle-right {
+.wp-blocks-gutengrid__resize-handles .components-resizable-box__handle-right {
 	right: -5px;
 }
 
-.wp-blocks-vwe-grid__resize-handles .components-resizable-box__handle-left {
+.wp-blocks-gutengrid__resize-handles .components-resizable-box__handle-left {
 	left: -5px;
 }

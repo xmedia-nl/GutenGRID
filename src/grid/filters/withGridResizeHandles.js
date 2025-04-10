@@ -8,12 +8,12 @@ import { removeColumnClasses, replaceColumnValuesInClass } from '../css-classnam
 const withGridResizeHandles = (BlockListBlock) => (props) => {
 	const { clientId, attributes, name } = props;
 
-	// Alleen directe children van vwe/grid
+	// Alleen directe children van gutengrid/grid
 	const isDirectChildOfGrid = useSelect((select) => {
 		const editor = select('core/block-editor');
 		const parentId = editor.getBlockRootClientId(clientId);
 		const parentBlock = editor.getBlock(parentId);
-		return parentBlock?.name === 'vwe/grid';
+		return parentBlock?.name === 'gutengrid/grid';
 	}, [clientId]);
 
 	// Sla wrapper-achtige bloktypes over
@@ -70,7 +70,7 @@ const withGridResizeHandles = (BlockListBlock) => (props) => {
 
 addFilter(
 	'editor.BlockListBlock',
-	'vwe/with-grid-resize-handles',
+	'gutengrid/with-grid-resize-handles',
 	withGridResizeHandles
 );
 

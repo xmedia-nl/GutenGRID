@@ -198,7 +198,7 @@ class Edit extends Component {
 				'layout-grid',
 				'layout-grid-editor'
 			),
-			'wp-block-vwe-grid-editor',
+			'wp-block-gutengrid-editor',
 			{
 				'wp-block-jetpack-layout-tablet': previewMode === 'Tablet',
 				'wp-block-jetpack-layout-desktop': previewMode === 'Desktop',
@@ -247,7 +247,7 @@ class Edit extends Component {
 
 				<InspectorControls>
 					<PanelBody title={__('Responsive Breakpoints', 'gutengrid')}>
-						<p className="vwe-grid-help">
+						<p className="gutengrid-help">
 							{__(
 								"Previewing your post will show your browser's breakpoint, not the currently selected one.",
 								'gutengrid'

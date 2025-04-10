@@ -155,7 +155,7 @@ const GridPositionControl = ({ clientId }) => {
 	const colMax = getGridWidth(device);
 
 	return (
-		<div className="vwe-grid-controls">
+		<div className="gutengrid-controls">
 			<NumberControl
 				label="Column start"
 				value={colStart}
@@ -292,11 +292,11 @@ import GridAlignControl from '../components/grid-align-control';
 const withGridAlignControls = createHigherOrderComponent((BlockEdit) => (props) => {
 	const { clientId, name, isSelected } = props;
 
-	// Check of dit een child is van een vwe/grid
+	// Check of dit een child is van een gutengrid/grid
 	const parentIsGrid = useSelect((select) => {
 		const parentId = select('core/block-editor').getBlockRootClientId(clientId);
 		const parentBlock = select('core/block-editor').getBlock(parentId);
-		return parentBlock?.name === 'vwe/grid';
+		return parentBlock?.name === 'gutengrid/grid';
 	}, [clientId]);
 
 	if (!isSelected || !parentIsGrid) {
@@ -318,7 +318,7 @@ const withGridAlignControls = createHigherOrderComponent((BlockEdit) => (props) 
 
 addFilter(
 	'editor.BlockEdit',
-	'vwe/grid-align-controls',
+	'gutengrid/grid-align-controls',
 	withGridAlignControls
 );
 
@@ -343,7 +343,7 @@ const withGridPositionControl = createHigherOrderComponent((BlockEdit) => (props
     const parentIsGrid = useSelect((select) => {
         const parentId = select('core/block-editor').getBlockRootClientId(clientId);
         const parentBlock = select('core/block-editor').getBlock(parentId);
-        return parentBlock?.name === 'vwe/grid';
+        return parentBlock?.name === 'gutengrid/grid';
     }, [clientId]);
 
     const currentDevice = useSelect((select) => {
@@ -368,7 +368,7 @@ const withGridPositionControl = createHigherOrderComponent((BlockEdit) => (props
             <BlockEdit {...props} />
             <InspectorControls>
                 <PanelBody title={__('Responsive Breakpoints', 'gutengrid')}>
-                    <p className="vwe-grid-help">
+                    <p className="gutengrid-help">
                         {__(
                             "Previewing your post will show your browser's breakpoint, not the currently selected one.",
                             'gutengrid'
@@ -398,7 +398,7 @@ const withGridPositionControl = createHigherOrderComponent((BlockEdit) => (props
 // export default withGridPositionControl;
 addFilter(
     'editor.BlockEdit',
-    'vwe/grid-position-controls',
+    'gutengrid/grid-position-controls',
     withGridPositionControl
 );
  
@@ -414,12 +414,12 @@ import { removeColumnClasses, replaceColumnValuesInClass } from '../css-classnam
 const withGridResizeHandles = (BlockListBlock) => (props) => {
 	const { clientId, attributes, name } = props;
 
-	// Alleen directe children van vwe/grid
+	// Alleen directe children van gutengrid/grid
 	const isDirectChildOfGrid = useSelect((select) => {
 		const editor = select('core/block-editor');
 		const parentId = editor.getBlockRootClientId(clientId);
 		const parentBlock = editor.getBlock(parentId);
-		return parentBlock?.name === 'vwe/grid';
+		return parentBlock?.name === 'gutengrid/grid';
 	}, [clientId]);
 
 	// Sla wrapper-achtige bloktypes over
@@ -476,7 +476,7 @@ const withGridResizeHandles = (BlockListBlock) => (props) => {
 
 addFilter(
 	'editor.BlockListBlock',
-	'vwe/with-grid-resize-handles',
+	'gutengrid/with-grid-resize-handles',
 	withGridResizeHandles
 );
 
@@ -613,7 +613,7 @@ const ResizeGridSingle = ({
 			setResizing(true);
 
 			// Zoek de juiste overlay van dit grid blok
-			const overlay = containerRef.current?.closest('.wp-block-vwe-grid-editor')?.querySelector('.vwe-grid-overlay');
+			const overlay = containerRef.current?.closest('.wp-block-gutengrid-editor')?.querySelector('.gutengrid-overlay');
 			if (overlay) {
 				overlay.classList.add('is-resizing');
 			}
@@ -668,7 +668,7 @@ const ResizeGridSingle = ({
 	const onMouseUp = () => {
 
 		setResizing(false);
-		const overlay = containerRef.current?.closest('.wp-block-vwe-grid-editor')?.querySelector('.vwe-grid-overlay');
+		const overlay = containerRef.current?.closest('.wp-block-gutengrid-editor')?.querySelector('.gutengrid-overlay');
 		if (overlay) {
 			overlay.classList.remove('is-resizing');
 		}
@@ -680,8 +680,8 @@ const ResizeGridSingle = ({
 	};
 
 	const wrapperClasses = classnames(className, {
-		'wp-block-vwe-grid__resizing': resizing,
-		'wp-block-vwe-grid__resizable': true,
+		'wp-block-gutengrid__resizing': resizing,
+		'wp-block-gutengrid__resizable': true,
 	});
 
 
@@ -705,7 +705,7 @@ const ResizeGridSingle = ({
 			)}
 
 			{/* Static resize handles */}
-			<span className="wp-blocks-vwe-grid__resize-handles">
+			<span className="wp-blocks-gutengrid__resize-handles">
 				<div
 					className="components-resizable-box__handle components-resizable-box__side-handle components-resizable-box__handle-right"
 					data-resize-right
@@ -789,7 +789,7 @@ export function detectHoveredCol(clientX, clientY) {
 	if (iframe && iframe.contentDocument) {
 	
 		const els = iframe.contentDocument.elementsFromPoint(clientX, clientY);
-		const hoveredCol = Array.from(els).find(el => el.classList?.contains('vwe-grid-overlay__col'));
+		const hoveredCol = Array.from(els).find(el => el.classList?.contains('gutengrid-overlay__col'));
 		if (hoveredCol) {
 			return Number(hoveredCol.dataset.col);
 		}
@@ -797,7 +797,7 @@ export function detectHoveredCol(clientX, clientY) {
 	}
 
 	const els = document.elementsFromPoint(clientX, clientY);
-	const hoveredCol = els.find(el => el.classList?.contains('vwe-grid-overlay__col'));
+	const hoveredCol = els.find(el => el.classList?.contains('gutengrid-overlay__col'));
 	if (hoveredCol) {
 		return Number(hoveredCol.dataset.col);
 	}
@@ -1092,7 +1092,7 @@ class Edit extends Component {
 				'layout-grid',
 				'layout-grid-editor'
 			),
-			'wp-block-vwe-grid-editor',
+			'wp-block-gutengrid-editor',
 			{
 				'wp-block-jetpack-layout-tablet': previewMode === 'Tablet',
 				'wp-block-jetpack-layout-desktop': previewMode === 'Desktop',
@@ -1141,7 +1141,7 @@ class Edit extends Component {
 
 				<InspectorControls>
 					<PanelBody title={__('Responsive Breakpoints', 'gutengrid')}>
-						<p className="vwe-grid-help">
+						<p className="gutengrid-help">
 							{__(
 								"Previewing your post will show your browser's breakpoint, not the currently selected one.",
 								'gutengrid'
@@ -1229,11 +1229,11 @@ const GridOverlay = ({ device }) => {
     const overlayRef = useRef();
 
     return (
-        <div className="vwe-grid-overlay bo-grid" ref={overlayRef}>
+        <div className="gutengrid-overlay bo-grid" ref={overlayRef}>
             {Array.from({ length: columns }).map((_, i) => (
                 <div
                     key={i}
-                    className={`vwe-grid-overlay__col d-grid-${i + 1}-${i + 1} t-grid-${i + 1}-${i + 1} m-grid-${i + 1}-${i + 1}`}
+                    className={`gutengrid-overlay__col d-grid-${i + 1}-${i + 1} t-grid-${i + 1}-${i + 1} m-grid-${i + 1}-${i + 1}`}
                     data-col={i + 1}
                 />
             ))}
@@ -1581,7 +1581,7 @@ import { GridIcon } from './icons';
 
 export function registerBlock() {
 	console.debug('registerBlock');
-	registerBlockType('vwe/grid', {
+	registerBlockType('gutengrid/grid', {
 		title: __('Layout Grid', 'gutengrid'),
 		description: __(
 			'Align blocks to a global grid, with support for responsive breakpoints.',
@@ -1684,53 +1684,53 @@ registerBlock();
  * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
  */
 
-error_log("vwe-grid plugin loaded");
+error_log("gutengrid plugin loaded");
 add_action( 'init', function() {
     $asset_file = include plugin_dir_path( __FILE__ ) . 'build/index.asset.php';
-    error_log(" editor_script: vwe-grid-editor-script " . plugins_url( 'build/index.js', __FILE__ ));
+    error_log(" editor_script: gutengrid-editor-script " . plugins_url( 'build/index.js', __FILE__ ));
     wp_register_script(
-        'vwe-grid-editor-script',
+        'gutengrid-editor-script',
         plugins_url( 'build/index.js', __FILE__ ),
         $asset_file['dependencies'],
         $asset_file['version']
     );
 
-    error_log(" style: vwe-grid-style " . plugins_url( 'build/style-index.css', __FILE__ ));
+    error_log(" style: gutengrid-style " . plugins_url( 'build/style-index.css', __FILE__ ));
     wp_register_style(
-        'vwe-grid-style',
+        'gutengrid-style',
         plugins_url( 'build/style-index.css', __FILE__ ),
         [],
         $asset_file['version']
     );
 
-    error_log(" editor_style: vwe-grid-editor-style " . plugins_url( 'build/index.css', __FILE__ ));
+    error_log(" editor_style: gutengrid-editor-style " . plugins_url( 'build/index.css', __FILE__ ));
     wp_register_style(
-        'vwe-grid-editor-style',
+        'gutengrid-editor-style',
         plugins_url( 'build/index.css', __FILE__ ),
         [],
         $asset_file['version']
     );
 
-    error_log(" register_block_type: vwe/grid ");
-    register_block_type( 'vwe/grid', [
-        'editor_script' => 'vwe-grid-editor-script',
-        'style' => 'vwe-grid-style',
-        'editor_style' => 'vwe-grid-editor-style',
+    error_log(" register_block_type: gutengrid/grid ");
+    register_block_type( 'gutengrid/grid', [
+        'editor_script' => 'gutengrid-editor-script',
+        'style' => 'gutengrid-style',
+        'editor_style' => 'gutengrid-editor-style',
     ] );
 
-    wp_set_script_translations( 'vwe-grid-editor-script', 'gutengrid' );
+    wp_set_script_translations( 'gutengrid-editor-script', 'gutengrid' );
 } );
 
 add_filter(
     'excerpt_allowed_wrapper_blocks',
     function( $allowed_wrapper_blocks ) {
-        return array_merge( $allowed_wrapper_blocks, [ 'vwe/grid', 'vwe/grid-column' ] );
+        return array_merge( $allowed_wrapper_blocks, [ 'gutengrid/grid', 'gutengrid/grid-column' ] );
     }
 );
 
  
 
-/**************************** vwe-grid.php ****************************/ 
+/**************************** gutengrid.php ****************************/ 
 <?php
 
  

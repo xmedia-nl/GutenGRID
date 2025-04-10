@@ -19,9 +19,9 @@
  */
 
 /**
- * This file is the entry point for the vwe-grid-editor-script handle.
+ * This file is the entry point for the gutengrid-editor-script handle.
  *
- * @handle vwe-grid-editor-script
+ * @handle gutengrid-editor-script
  */
 
 
@@ -50,7 +50,7 @@ console.log(__('Testing translation load', 'gutengrid'));
 
 export function registerBlock() {
 	console.debug('registerBlock');
-	registerBlockType('vwe/grid', {
+	registerBlockType('gutengrid/grid', {
 		title: __('Layout Grid', 'gutengrid'),
 		description: __(
 			'Align blocks to a global grid, with support for responsive breakpoints.',

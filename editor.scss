@@ -12,20 +12,20 @@
 // These rules exist to support classic themes, and are unnecessary in block themes.
 
 // 1. Reset margins on block itself, so it doesn't inherit the baseline margin.
-[data-type="vwe/grid"] {
+[data-type="gutengrid/grid"] {
 	margin-top: 0;
 	margin-bottom: 0;
 	grid-column: 1/-1 !important; // always full width, we'll define the child grid in the child
 }
 
 // 2. Reset margins on immediate innerblocks container.
-[data-type="vwe/grid"]>.block-editor-block-list__block-edit>[data-block] {
+[data-type="gutengrid/grid"]>.block-editor-block-list__block-edit>[data-block] {
 	margin-top: 0;
 	margin-bottom: 0;
 }
 
 // 3. Unset margins and paddings for column container.
-.wp-block-vwe-grid-editor [data-type="vwe/grid-column"].wp-block {
+.wp-block-gutengrid-editor [data-type="gutengrid/grid-column"].wp-block {
 	// Selector needs specificity to override.
 	margin: 0;
 	padding-left: 0;
@@ -39,14 +39,14 @@
 
 // This prevents collapsing margins, which makes for a more stable experience.
 // It is definitely needed for background colors to work.
-.wp-block-vwe-grid-column {
+.wp-block-gutengrid-column {
 	border-top: 0.05px solid transparent;
 	border-bottom: 0.05px solid transparent;
 }
 
 // There are extra containers in the editing canvas. They need to be set to grid
 // same as the corresponding containers on the frontend, to match.
-[data-type="vwe/grid-column"] {
+[data-type="gutengrid/grid-column"] {
 	display: grid;
 	height: 100%;
 }
@@ -56,7 +56,7 @@
 // To make sure this is smooth, we add some animation.
 // For now this whole bit exists so the side UI, and resize handles, are available even on full-wide blocks.
 // Let's revisit if another solution presents itself.
-[data-type="vwe/grid"][data-align="full"] {
+[data-type="gutengrid/grid"][data-align="full"] {
 	// We use flex to center here, because the margins are already being used.
 	display: flex;
 	flex-direction: column;
@@ -74,7 +74,7 @@
  * Inspector Controls
  */
 
-.vwe-grid-columns {
+.gutengrid-columns {
 	display: flex;
 	justify-content: space-between;
 	font-size: 12px;
@@ -104,11 +104,11 @@
 	}
 }
 
-.components-button-group+.vwe-grid-settings {
+.components-button-group+.gutengrid-settings {
 	margin-top: 16px;
 }
 
-.components-panel__body .vwe-grid-settings__group {
+.components-panel__body .gutengrid-settings__group {
 	display: flex;
 	padding: 8px 0;
 	margin-bottom: 8px;
@@ -123,7 +123,7 @@
 	}
 }
 
-.vwe-grid-help {
+.gutengrid-help {
 	font-size: 12px;
 	font-style: normal;
 	color: #757575;
@@ -135,7 +135,7 @@
  * Placeholder options
  */
 
-.wp-block-vwe-grid-editor .block-editor-inner-blocks__template-picker-options {
+.wp-block-gutengrid-editor .block-editor-inner-blocks__template-picker-options {
 	display: flex;
 	flex-direction: row;
 	flex-wrap: nowrap;
@@ -170,11 +170,11 @@
  * Redesign resize handles to handle literal edge cases.
  */
 
-[data-type="vwe/grid"] {
+[data-type="gutengrid/grid"] {
 
 	// New vertical appearance.
 	.wpcom-overlay-resize__handle .components-resizable-box__side-handle,
-	.wp-blocks-vwe-grid__resize-handles .components-resizable-box__side-handle {
+	.wp-blocks-gutengrid__resize-handles .components-resizable-box__side-handle {
 
 		// Make the circle a pill shape instead.
 		&::after {
@@ -203,7 +203,7 @@
 	.wp-block-jetpack-layout-gutter__nowrap {
 
 		.wpcom-overlay-resize__handle .components-resizable-box__side-handle.components-resizable-box__handle-right,
-		.wp-blocks-vwe-grid__resize-handles .components-resizable-box__side-handle.components-resizable-box__handle-right {
+		.wp-blocks-gutengrid__resize-handles .components-resizable-box__side-handle.components-resizable-box__handle-right {
 			right: 0;
 
 			&::before,
@@ -213,7 +213,7 @@
 		}
 
 		.wpcom-overlay-resize__handle .components-resizable-box__side-handle.components-resizable-box__handle-left,
-		.wp-blocks-vwe-grid__resize-handles .components-resizable-box__side-handle.components-resizable-box__handle-left {
+		.wp-blocks-gutengrid__resize-handles .components-resizable-box__side-handle.components-resizable-box__handle-left {
 			left: 0;
 
 			&::before,
@@ -236,18 +236,18 @@
  * Individual column alignment for the editor
  */
 
-.wp-block-vwe-grid-editor {
+.wp-block-gutengrid-editor {
 	position: relative;
 
-	&.are-vertically-aligned-top [data-type="vwe/grid-column"].wp-block {
+	&.are-vertically-aligned-top [data-type="gutengrid/grid-column"].wp-block {
 		align-self: flex-start;
 	}
 
-	&.are-vertically-aligned-center [data-type="vwe/grid-column"].wp-block {
+	&.are-vertically-aligned-center [data-type="gutengrid/grid-column"].wp-block {
 		align-self: center;
 	}
 
-	&.are-vertically-aligned-bottom [data-type="vwe/grid-column"].wp-block {
+	&.are-vertically-aligned-bottom [data-type="gutengrid/grid-column"].wp-block {
 		align-self: flex-end;
 	}
 

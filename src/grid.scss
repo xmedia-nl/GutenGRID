@@ -5,7 +5,7 @@
  */
 
 // Output editor specific styles.
-.wp-block-vwe-grid-editor > .block-editor-inner-blocks > .block-editor-block-list__layout {
+.wp-block-gutengrid-editor > .block-editor-inner-blocks > .block-editor-block-list__layout {
 	// display: grid;
 	// grid-gap: 24px;
 	// grid-template-columns: $grid-desktop;
@@ -32,24 +32,24 @@
 	overflow-wrap: break-word; // New standard.
 }
 
-// .wp-block-vwe-grid-editor.wp-block-jetpack-layout-gutter__none > .block-editor-inner-blocks > .block-editor-block-list__layout {
+// .wp-block-gutengrid-editor.wp-block-jetpack-layout-gutter__none > .block-editor-inner-blocks > .block-editor-block-list__layout {
 // 	grid-gap: $grid-gutter-none;
 // }
 
-// .wp-block-vwe-grid-editor.wp-block-jetpack-layout-gutter__small > .block-editor-inner-blocks > .block-editor-block-list__layout {
+// .wp-block-gutengrid-editor.wp-block-jetpack-layout-gutter__small > .block-editor-inner-blocks > .block-editor-block-list__layout {
 // 	grid-gap: $grid-gutter-small;
 // }
 
-// .wp-block-vwe-grid-editor.wp-block-jetpack-layout-gutter__medium > .block-editor-inner-blocks > .block-editor-block-list__layout {
+// .wp-block-gutengrid-editor.wp-block-jetpack-layout-gutter__medium > .block-editor-inner-blocks > .block-editor-block-list__layout {
 // 	grid-gap: $grid-gutter-medium;
 // }
 
-// .wp-block-vwe-grid-editor.wp-block-jetpack-layout-gutter__huge > .block-editor-inner-blocks > .block-editor-block-list__layout {
+// .wp-block-gutengrid-editor.wp-block-jetpack-layout-gutter__huge > .block-editor-inner-blocks > .block-editor-block-list__layout {
 // 	grid-gap: $grid-gutter-huge;
 // }
 
 // Editor grid styles
-.wp-block-vwe-grid-editor {
+.wp-block-gutengrid-editor {
 	// These three rules are only necessary for Safari.
 	// Safari interprets percentages in CSS grid differently.
 	// Flex causes children to "stretch", fixing that interpretation.
@@ -62,7 +62,7 @@
  * Presets for tablet and mobile - switch the number of columns and layout
  */
 
-// .wp-block-vwe-grid-editor.wp-block-jetpack-layout-tablet {
+// .wp-block-gutengrid-editor.wp-block-jetpack-layout-tablet {
 // 	.wpcom-overlay-grid,
 // 	.wpcom-resize-grid,
 // 	> .block-editor-inner-blocks > .block-editor-block-list__layout {
@@ -70,7 +70,7 @@
 // 	}
 // }
 
-// .wp-block-vwe-grid-editor.wp-block-jetpack-layout-mobile {
+// .wp-block-gutengrid-editor.wp-block-jetpack-layout-mobile {
 // 	.wpcom-overlay-grid,
 // 	.wpcom-resize-grid,
 // 	> .block-editor-inner-blocks > .block-editor-block-list__layout {
@@ -80,7 +80,7 @@
 
 // Resize handles.
 .wpcom-overlay-resize__handle,
-.wp-block-vwe-grid-column {
+.wp-block-gutengrid-column {
 	.components-resizable-box__container {
 		position: relative;
 		user-select: auto;
@@ -103,14 +103,14 @@
 }
 
 // Ensure the drag handles in the innerblocks are visible when the Grid, or Grid Column blocks are selected.
-[data-type="vwe/grid"].is-selected .wp-blocks-vwe-grid__resize-handles .components-resizable-box__handle,
-[data-type="vwe/grid-column"].is-selected .wp-blocks-vwe-grid__resize-handles .components-resizable-box__handle {
+[data-type="gutengrid/grid"].is-selected .wp-blocks-gutengrid__resize-handles .components-resizable-box__handle,
+[data-type="gutengrid/grid-column"].is-selected .wp-blocks-gutengrid__resize-handles .components-resizable-box__handle {
 	display: block;
 	z-index: 10000;
 }
 
-[data-type="vwe/grid"].is-selected .wp-block-jetpack-layout-resizable .wp-blocks-vwe-grid__resize-handles .components-resizable-box__handle,
-[data-type="vwe/grid"] .wp-block-jetpack-layout-resizable [data-type="vwe/grid-column"].is-selected .wp-blocks-vwe-grid__resize-handles .components-resizable-box__handle {
+[data-type="gutengrid/grid"].is-selected .wp-block-jetpack-layout-resizable .wp-blocks-gutengrid__resize-handles .components-resizable-box__handle,
+[data-type="gutengrid/grid"] .wp-block-jetpack-layout-resizable [data-type="gutengrid/grid-column"].is-selected .wp-blocks-gutengrid__resize-handles .components-resizable-box__handle {
 	display: block;
 }
 
@@ -120,8 +120,8 @@ $dark-opacity-light-800: rgba(#425863, 0.4);
 $light-opacity-light-800: rgba(#fff, 0.45);
 
 // Show a special style of block borders for the individual columns, so they line up with the drag handle.
-[data-type="vwe/grid-column"].is-selected.is-selected, // This rule is for newer versions of the plugin and WordPress 5.3. Extra specificity can be removed when G2 UI lands.
-[data-type="vwe/grid-column"].is-selected > .block-editor-block-list__block-edit.block-editor-block-list__block-edit { // This rule is for older versions of the plugin and WordPress 5.3.
+[data-type="gutengrid/grid-column"].is-selected.is-selected, // This rule is for newer versions of the plugin and WordPress 5.3. Extra specificity can be removed when G2 UI lands.
+[data-type="gutengrid/grid-column"].is-selected > .block-editor-block-list__block-edit.block-editor-block-list__block-edit { // This rule is for older versions of the plugin and WordPress 5.3.
 	> .block-editor-block-contextual-toolbar > .block-editor-block-toolbar {
 		left: 18px;
 	}
@@ -145,7 +145,7 @@ $light-opacity-light-800: rgba(#fff, 0.45);
 }
 
 // When clicked, hide the fake drag handles and show the real one.
-.wp-block-vwe-grid__resizing {
+.wp-block-gutengrid__resizing {
 	user-select: none;
 	z-index: 10000;
 
@@ -153,7 +153,7 @@ $light-opacity-light-800: rgba(#fff, 0.45);
 		display: none !important;
 	}
 }
-.wp-block-vwe-grid__resizable{
+.wp-block-gutengrid__resizable{
 	position: relative;
 }
 
@@ -161,7 +161,7 @@ $light-opacity-light-800: rgba(#fff, 0.45);
 	display: block !important;
 }
 
-.wp-blocks-vwe-grid__showright.components-resizable-box__container .components-resizable-box__handle-right,
-.wp-blocks-vwe-grid__showleft.components-resizable-box__container .components-resizable-box__handle-left {
+.wp-blocks-gutengrid__showright.components-resizable-box__container .components-resizable-box__handle-right,
+.wp-blocks-gutengrid__showleft.components-resizable-box__container .components-resizable-box__handle-left {
 	display: block !important;
 }
