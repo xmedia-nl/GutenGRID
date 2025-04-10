@@ -71,3 +71,28 @@ function gutengrid_load_textdomain()
     );
 }
 add_action('init', 'gutengrid_load_textdomain');
+
+
+function gutengrid_render_grid_block($attributes, $content, $block)
+{
+    if (empty($block->inner_blocks)) {
+        return $content;
+    }
+    $parsed_content = '';
+    $wrapper = '<div class="%s grid-block-wrapper">%s</div>';
+    foreach ($block->inner_blocks as $inner) {
+        $block_html = $inner->render();
+        $wrapper_class = $inner->parsed_block['attrs']['wrapperClassname'] ?? '';
+        
+        if (!empty($wrapper_class)) {
+            $parsed_content .= sprintf(
+                $wrapper,
+                $wrapper_class,
+                $block_html
+            );
+        } else {
+            $parsed_content .= $block_html;
+        }
+    }
+    return $parsed_content;
+}

@@ -2,7 +2,7 @@ import { addFilter } from '@wordpress/hooks';
 import { useSelect, useDispatch } from '@wordpress/data';
 import ResizeGridSingle from '../resize-grid-single';
 import { removeColumnClasses, replaceColumnValuesInClass } from '../css-classname'
-
+import { useSupportsClassName } from '../utils/block-support';
 
 
 const withGridResizeHandles = (BlockListBlock) => (props) => {
@@ -24,6 +24,7 @@ const withGridResizeHandles = (BlockListBlock) => (props) => {
 
 	// Update functie om className aan te passen op basis van drag
 	const { updateBlockAttributes } = useDispatch('core/block-editor');
+	const supportsClass = useSupportsClassName(clientId);
 
 	return (
 		<ResizeGridSingle
@@ -47,7 +48,6 @@ const withGridResizeHandles = (BlockListBlock) => (props) => {
 				if (newStart >= newEnd) {
 					return;
 				}
-
 				const newGridClass = `${prefix}-grid-${newStart}-${newEnd}`;
 				// const cleanClass = removeColumnClasses(attributes.className || '', device);
 				// const newClassName = `${cleanClass} ${newGridClass}`.trim();
@@ -60,6 +60,8 @@ const withGridResizeHandles = (BlockListBlock) => (props) => {
 
 				updateBlockAttributes(clientId, {
 					className: newClassName,
+					wrapperClassname: !supportsClass ? newClassName : undefined,
+
 				});
 			}}
 		>

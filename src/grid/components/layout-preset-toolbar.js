@@ -3,6 +3,7 @@ import { useSelect, useDispatch } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 import { replaceColumnValuesInClass, getStartEndColFromClassName } from '../css-classname';
 import { HalfLeftIcon, FullCenterIcon, HalfRightIcon, } from '../../icons';
+import { useSupportsClassName } from '../utils/block-support';
 
 
 const PRESETS = {
@@ -33,17 +34,22 @@ const LayoutPresetToolbar = ({ clientId }) => {
     );
 
     const { updateBlockAttributes } = useDispatch('core/block-editor');
+    const supportsClass = useSupportsClassName(clientId);
 
     const applyPreset = (type) => {
         const [start, end] = PRESETS[device][type];
         const newClassName = replaceColumnValuesInClass(className, device, start, end);
-        updateBlockAttributes(clientId, { className: newClassName });
+        updateBlockAttributes(clientId, {
+            className: newClassName,
+            wrapperClassname: !supportsClass ? newClassName : undefined,
+        });
     };
     const currentMatches = (type) => {
         const [expectedStart, expectedEnd] = PRESETS[device][type];
         const { start, end } = getStartEndColFromClassName(className, device);
         return start === expectedStart && end === expectedEnd;
     };
+
     return (
         <ToolbarGroup label={__('Layout presets', 'gutengrid')}>
             <ToolbarButton

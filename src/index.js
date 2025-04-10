@@ -137,3 +137,22 @@ export function registerBlock() {
 
 }
 registerBlock();
+
+
+// Adding wrapperClass for blocks that don't support className
+wp.hooks.addFilter(
+    'blocks.registerBlockType',
+    'vwe/add-wrapper-classname-attribute',
+    (settings, name) => {
+        if (settings.supports?.className !== false) return settings;
+
+        settings.attributes = {
+            ...settings.attributes,
+            wrapperClassname: {
+                type: 'string',
+                default: '',
+            },
+        };
+        return settings;
+    }
+);

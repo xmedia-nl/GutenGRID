@@ -12,7 +12,7 @@ import {
 	alignFull,
 } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
-
+import { useSupportsClassName } from '../utils/block-support';
 const ALIGN_OPTIONS = [
 	{ label: 'Start', value: 'start', icon: justifyLeft },
 	{ label: 'Center', value: 'center', icon: justifyCenter },
@@ -41,10 +41,14 @@ const GridAlignControl = ({ clientId, toolbar = false }) => {
 
 	const justifyValue = getValueFromClass(className, 'justify');
 	const alignValue = getValueFromClass(className, 'align');
+	const supportsClass = useSupportsClassName(clientId);
 
 	const update = (key, value) => {
 		const newClassName = replaceAlignClass(className, key, value);
-		updateBlockAttributes(clientId, { className: newClassName });
+		updateBlockAttributes(clientId, {
+			className: newClassName,
+			wrapperClassname: !supportsClass ? newClassName : undefined,
+		});
 	};
 
 	if (toolbar) {

@@ -10,6 +10,7 @@ import {
 } from '../css-classname';
 import { getGridWidth } from '../../grid/grid-defaults';
 import { __ } from '@wordpress/i18n';
+import { useSupportsClassName } from '../utils/block-support';
 
 const GridPositionControl = ({ clientId }) => {
 	const { className = '' } = useSelect((select) =>
@@ -27,6 +28,7 @@ const GridPositionControl = ({ clientId }) => {
 	const [colEnd, setColEnd] = useState('');
 	const [rowStart, setRowStart] = useState('');
 	const [rowEnd, setRowEnd] = useState('');
+	const supportsClass = useSupportsClassName(clientId);
 
 	// Initial values bij load of class/device change
 	useEffect(() => {
@@ -45,7 +47,11 @@ const GridPositionControl = ({ clientId }) => {
         if (!isValid(start) || !isValid(end)) return;
     
         const newClassName = replaceColumnValuesInClass(className, device, Number(start), Number(end));
-        updateBlockAttributes(clientId, { className: newClassName });
+		updateBlockAttributes(clientId, {
+			className: newClassName,
+			wrapperClassname: !supportsClass ? newClassName : undefined,
+
+		});
     };
 
 	const updateRowClass = (start, end) => {
@@ -53,7 +59,10 @@ const GridPositionControl = ({ clientId }) => {
         if (!isValid(start) || !isValid(end)) return;
     
         const newClassName = replaceRowValuesInClass(className, device, Number(start), Number(end));
-        updateBlockAttributes(clientId, { className: newClassName });
+		updateBlockAttributes(clientId, {
+			className: newClassName,
+			wrapperClassname: !supportsClass ? newClassName : undefined,
+		});
     };
 
 	const colMax = getGridWidth(device);

@@ -27,7 +27,8 @@ const ResizeGridSingle = ({
 	const [hoveredColumn, setHoveredColumn] = useState(null);
 	const className = useSelect((select) => {
 		return select('core/block-editor')
-			.getBlockAttributes(clientId)?.className || '';
+			.getBlockAttributes(clientId)?.className || select('core/block-editor')
+			.getBlockAttributes(clientId)?.wrapperClassname ||'';
 	}, [clientId]);
 
 	const device = useSelect((select) =>
