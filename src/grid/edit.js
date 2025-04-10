@@ -52,14 +52,14 @@ import {
 	withPreviewDeviceType,
 } from './higher-order';
 import GridOverlay from './grid-overlay';
-import GridAlignControl from './grid-align-control';
+
 const MINIMUM_RESIZE_SIZE = 50; // Empirically determined to be a good size
 
 const BLOCKS_TEMPLATE = [
 	[
 		'core/heading',
 		{
-			content: 'Lourm Ipsum',
+			content: 'Lorum Ipsum',
 			className: 'd-row-1 d-grid-2-6 t-grid-2-6 m-grid-2-5',
 			style: {
 				typography: { fontSize: '48px' },
@@ -70,7 +70,7 @@ const BLOCKS_TEMPLATE = [
 	[
 		'core/paragraph',
 		{
-			content: 'Lorem ipsum dolor sit amet...',
+			content: 'Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.',
 			className: 'd-row-1 d-grid-6-14 t-grid-6-14 m-grid-5-10',
 		},
 	],
@@ -83,7 +83,7 @@ const BLOCKS_TEMPLATE = [
 			[
 				'core/button',
 				{
-					text: 'Meer informatie',
+					text: 'Click here',
 					className: 'is-style-fill',
 				},
 			],
@@ -228,11 +228,11 @@ class Edit extends Component {
 					<GridOverlay device={previewMode} />
 					{!this.state.hasBoGrid && (
 						<Notice status="warning" isDismissible={false}>
-							<strong>{__('BO Grid missing', 'layout-grid')}</strong>
+							<strong>{__('BO Grid missing', 'gutengrid')}</strong>
 							<p>
 								{__(
 									'This block requires the theme to implement a .bo-grid layout on the <main> element. Please ensure your theme supports BO Grid for correct layout behavior. A starter theme will be available soon.',
-									'layout-grid'
+									'gutengrid'
 								)}
 							</p>
 						</Notice>
@@ -246,11 +246,11 @@ class Edit extends Component {
 				</div>
 
 				<InspectorControls>
-					<PanelBody title={__('Responsive Breakpoints', 'layout-grid')}>
+					<PanelBody title={__('Responsive Breakpoints', 'gutengrid')}>
 						<p className="vwe-grid-help">
 							{__(
 								"Previewing your post will show your browser's breakpoint, not the currently selected one.",
-								'layout-grid'
+								'gutengrid'
 							)}
 						</p>
 						<ButtonGroup>

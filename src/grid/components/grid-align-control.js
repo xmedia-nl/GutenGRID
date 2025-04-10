@@ -11,6 +11,7 @@ import {
 	alignWide,
 	alignFull,
 } from '@wordpress/icons';
+import { __ } from '@wordpress/i18n';
 
 const ALIGN_OPTIONS = [
 	{ label: 'Start', value: 'start', icon: justifyLeft },
@@ -67,19 +68,19 @@ const GridAlignControl = ({ clientId, toolbar = false }) => {
 	return (
 		<>
 			<SelectControl
-				label="Justify content"
+				label={__('Justify content', 'gutengrid')}
 				value={justifyValue}
 				options={[
-					{ label: 'Auto', value: '' },
+					{ label: __('Auto', 'gutengrid'), value: '' },
 					...ALIGN_OPTIONS.map(({ label, value }) => ({ label, value })),
 				]}
 				onChange={(value) => update('justify', value)}
 			/>
 			<SelectControl
-				label="Align content"
+				label={__("Align content", 'gutengrid')}
 				value={alignValue}
 				options={[
-					{ label: 'Auto', value: '' },
+					{ label: __('Auto', 'gutengrid'), value: '' },
 					...ALIGN_OPTIONS.map(({ label, value }) => ({ label, value })),
 				]}
 				onChange={(value) => update('align', value)}

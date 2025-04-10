@@ -1,4 +1,31 @@
 /**
+ * @wordpress/i18n
+ * @see https://developer.wordpress.org/block-editor/reference-guides/packages/packages-i18n/
+ *
+ * @package GutenGrid
+ * @file index.js
+ * @version 1.0.0
+ *
+ * @wordpress-plugin
+ * Plugin Name: GutenGrid
+ * Text Domain: gutengrid
+ */
+
+/* globals wp */
+/* eslint-disable no-unused-vars */
+
+/**
+ * Internal dependencies
+ */
+
+/**
+ * This file is the entry point for the vwe-grid-editor-script handle.
+ *
+ * @handle vwe-grid-editor-script
+ */
+
+
+/**
  * WordPress dependencies
  */
 
@@ -11,21 +38,23 @@ import '../editor.scss';
 /**
  * Internal dependencies
  */
-// import './grid/filters/withGridBlockResizing';
 import './grid/filters/withGridResizeHandles';
 import './grid/filters/withGridPositionControl';
+// import './grid/filters/withGridAlignControls'; // need to rethink this. Blocks that support alignment usually have this already.
 
 import editGrid from './grid/edit';
 import saveGrid from './grid/save';
 import { GridIcon } from './icons';
 
+console.log(__('Testing translation load', 'gutengrid'));
+
 export function registerBlock() {
 	console.debug('registerBlock');
 	registerBlockType('vwe/grid', {
-		title: __('Layout Grid', 'layout-grid'),
+		title: __('Layout Grid', 'gutengrid'),
 		description: __(
 			'Align blocks to a global grid, with support for responsive breakpoints.',
-			'layout-grid'
+			'gutengrid'
 		),
 		icon: GridIcon,
 		category: 'layout',

@@ -1,0 +1,108 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2025-04-10T08:56:39+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.11.0\n"
+"X-Domain: gutengrid\n"
+
+#: constants.js:16
+msgid "Desktop"
+msgstr ""
+
+#: constants.js:21
+msgid "Tablet"
+msgstr ""
+
+#: constants.js:26
+msgid "Mobile"
+msgstr ""
+
+#: grid/components/grid-align-control.js:71
+msgid "Justify content"
+msgstr ""
+
+#: grid/components/grid-align-control.js:74
+#: grid/components/grid-align-control.js:83
+#: grid/components/grid-position-control.js:72
+#: grid/components/grid-position-control.js:83
+#: grid/components/grid-position-control.js:93
+#: grid/components/grid-position-control.js:103
+msgid "Auto"
+msgstr ""
+
+#: grid/components/grid-align-control.js:80
+msgid "Align content"
+msgstr ""
+
+#: grid/components/grid-position-control.js:64
+msgid "Column start"
+msgstr ""
+
+#: grid/components/grid-position-control.js:75
+msgid "Column end"
+msgstr ""
+
+#: grid/components/grid-position-control.js:86
+msgid "Row start"
+msgstr ""
+
+#: grid/components/grid-position-control.js:96
+msgid "Row end"
+msgstr ""
+
+#: grid/components/layout-preset-toolbar.js:48
+msgid "Layout presets"
+msgstr ""
+
+#: grid/components/layout-preset-toolbar.js:51
+msgid "Left"
+msgstr ""
+
+#: grid/components/layout-preset-toolbar.js:57
+msgid "Main center"
+msgstr ""
+
+#: grid/components/layout-preset-toolbar.js:63
+msgid "Right"
+msgstr ""
+
+#: grid/edit.js:231
+msgid "BO Grid missing"
+msgstr ""
+
+#: grid/edit.js:233
+msgid "This block requires the theme to implement a .bo-grid layout on the <main> element. Please ensure your theme supports BO Grid for correct layout behavior. A starter theme will be available soon."
+msgstr ""
+
+#: grid/edit.js:249
+#: grid/filters/withGridPositionControl.js:43
+msgid "Responsive Breakpoints"
+msgstr ""
+
+#: grid/edit.js:251
+#: grid/filters/withGridPositionControl.js:45
+msgid "Previewing your post will show your browser's breakpoint, not the currently selected one."
+msgstr ""
+
+#: grid/filters/withGridPositionControl.js:63
+msgid "Grid position"
+msgstr ""
+
+#: index.js:49
+msgid "Testing translation load"
+msgstr ""
+
+#: index.js:54
+msgid "Layout Grid"
+msgstr ""
+
+#: index.js:55
+msgid "Align blocks to a global grid, with support for responsive breakpoints."
+msgstr ""

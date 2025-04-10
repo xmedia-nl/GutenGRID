@@ -9,7 +9,9 @@
     "start": "wp-scripts start",
     "build": "wp-scripts build --stats-error-details",
     "build-dev": "wp-scripts build --webpack-config ./webpack.test.config.js --stats-error-details",
-    "analyze": "wp-scripts build --analyze"
+    "analyze": "wp-scripts build --analyze",
+    "make-pot": "wp i18n make-pot . languages/gutengrid.pot",
+    "make-json": "wp i18n make-json languages"
   },
   "devDependencies": {
     "css-loader": "^7.1.2",

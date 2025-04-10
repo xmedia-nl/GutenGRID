@@ -13,17 +13,17 @@ export const DEVICE_MOBILE = 'Mobile';
 export const getLayouts = () => [
 	{
 		value: DEVICE_DESKTOP,
-		label: __( 'Desktop', 'layout-grid' ),
+		label: __( 'Desktop', 'gutengrid' ),
 		icon: desktop,
 	},
 	{
 		value: DEVICE_TABLET,
-		label: __( 'Tablet', 'layout-grid' ),
+		label: __( 'Tablet', 'gutengrid' ),
 		icon: tablet,
 	},
 	{
 		value: DEVICE_MOBILE,
-		label: __( 'Mobile', 'layout-grid' ),
+		label: __( 'Mobile', 'gutengrid' ),
 		icon: mobile,
 	},
 ];

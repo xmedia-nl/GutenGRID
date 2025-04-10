@@ -2,7 +2,6 @@ import { createHigherOrderComponent } from '@wordpress/compose';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { InspectorControls, BlockControls  } from '@wordpress/block-editor';
 import { PanelBody, TextControl, ButtonGroup, Button, } from '@wordpress/components';
-import GridPositionControl from '../components/grid-position-control';
 import { addFilter } from '@wordpress/hooks';
 // import {updateInspectorDevice, getInspectorMode} from '../../grid/edit.js';
 import { __ } from '@wordpress/i18n';
@@ -10,7 +9,6 @@ import { getLayouts } from '../../constants';
 
 import LayoutPresetToolbar from '../components/layout-preset-toolbar';
 import GridPositionControl from '../components/grid-position-control';
-import GridAlignControls from './grid-align-controls';
 
 const withGridPositionControl = createHigherOrderComponent((BlockEdit) => (props) => {
     const { clientId, name, isSelected } = props;
@@ -42,11 +40,11 @@ const withGridPositionControl = createHigherOrderComponent((BlockEdit) => (props
             </BlockControls>
             <BlockEdit {...props} />
             <InspectorControls>
-                <PanelBody title={__('Responsive Breakpoints', 'layout-grid')}>
+                <PanelBody title={__('Responsive Breakpoints', 'gutengrid')}>
                     <p className="vwe-grid-help">
                         {__(
                             "Previewing your post will show your browser's breakpoint, not the currently selected one.",
-                            'layout-grid'
+                            'gutengrid'
                         )}
                     </p>
                     <ButtonGroup>
@@ -62,7 +60,7 @@ const withGridPositionControl = createHigherOrderComponent((BlockEdit) => (props
                     </ButtonGroup>
 
                 </PanelBody>
-                <PanelBody title="Grid positie">
+                <PanelBody title={__("Grid position", 'gutengrid')}>
                     <GridPositionControl clientId={clientId} />
                 </PanelBody>
             </InspectorControls>

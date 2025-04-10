@@ -9,6 +9,7 @@ import {
 	replaceRowValuesInClass
 } from '../css-classname';
 import { getGridWidth } from '../../grid/grid-defaults';
+import { __ } from '@wordpress/i18n';
 
 const GridPositionControl = ({ clientId }) => {
 	const { className = '' } = useSelect((select) =>
@@ -60,7 +61,7 @@ const GridPositionControl = ({ clientId }) => {
 	return (
 		<div className="vwe-grid-controls">
 			<NumberControl
-				label="Column start"
+				label={__('Column start', 'gutengrid')}
 				value={colStart}
 				onChange={(value) => {
 					setColStart(value);
@@ -68,10 +69,10 @@ const GridPositionControl = ({ clientId }) => {
 				}}
 				min={1}
 				max={colMax}
-				placeholder="Auto"
+				placeholder={__("Auto", 'gutengrid')}
 			/>
 			<NumberControl
-				label="Column end"
+				label={__('Column end', 'gutengrid')}
 				value={colEnd}
 				onChange={(value) => {
 					setColEnd(value);
@@ -79,27 +80,27 @@ const GridPositionControl = ({ clientId }) => {
 				}}
 				min={1}
 				max={colMax + 1}
-				placeholder="Auto"
+				placeholder={__("Auto", 'gutengrid')}
 			/>
 			<NumberControl
-				label="Row start"
+				label={__("Row start", 'gutengrid')}
 				value={rowStart}
 				onChange={(value) => {
 					setRowStart(value);
 					updateRowClass(value, rowEnd);
 				}}
 				min={1}
-				placeholder="Auto"
+				placeholder={__("Auto", 'gutengrid')}
 			/>
 			<NumberControl
-				label="Row end"
+				label={__("Row end", 'gutengrid')}
 				value={rowEnd}
 				onChange={(value) => {
 					setRowEnd(value);
 					updateRowClass(rowStart, value);
 				}}
 				min={1}
-				placeholder="Auto"
+				placeholder={__("Auto", 'gutengrid')}
 			/>
 		</div>
 	);

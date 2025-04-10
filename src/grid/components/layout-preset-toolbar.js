@@ -45,22 +45,22 @@ const LayoutPresetToolbar = ({ clientId }) => {
         return start === expectedStart && end === expectedEnd;
     };
     return (
-        <ToolbarGroup label={__('Layout presets', 'layout-grid')}>
+        <ToolbarGroup label={__('Layout presets', 'gutengrid')}>
             <ToolbarButton
                 icon={<HalfLeftIcon />}
-                label={__('Linkerhelft', 'layout-grid')}
+                label={__('Left', 'gutengrid')}
                 onClick={() => applyPreset('left')}
                 isPressed={currentMatches('left')}
             />
             <ToolbarButton
                 icon={<FullCenterIcon />}
-                label={__('Midden', 'layout-grid')}
+                label={__('Main center', 'gutengrid')}
                 onClick={() => applyPreset('center')}
                 isPressed={currentMatches('center')}
             />
             <ToolbarButton
                 icon={<HalfRightIcon />}
-                label={__('Rechterhelft', 'layout-grid')}
+                label={__('Right', 'gutengrid')}
                 onClick={() => applyPreset('right')}
                 isPressed={currentMatches('right')}
             />

@@ -1,15 +1,14 @@
 import { createHigherOrderComponent } from '@wordpress/compose';
 import { useSelect } from '@wordpress/data';
-import { addFilter } from '@wordpress/hooks';
 import { InspectorControls, BlockControls } from '@wordpress/block-editor';
+import { addFilter } from '@wordpress/hooks';
 
 import GridAlignControl from '../components/grid-align-control';
-import { PanelBody } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
 
 const withGridAlignControls = createHigherOrderComponent((BlockEdit) => (props) => {
-	const { clientId, isSelected } = props;
+	const { clientId, name, isSelected } = props;
 
+	// Check of dit een child is van een vwe/grid
 	const parentIsGrid = useSelect((select) => {
 		const parentId = select('core/block-editor').getBlockRootClientId(clientId);
 		const parentBlock = select('core/block-editor').getBlock(parentId);
@@ -23,15 +22,11 @@ const withGridAlignControls = createHigherOrderComponent((BlockEdit) => (props) 
 	return (
 		<>
 			<BlockEdit {...props} />
-
 			<BlockControls>
 				<GridAlignControl clientId={clientId} toolbar />
 			</BlockControls>
-
 			<InspectorControls>
-				<PanelBody title={__('Uitlijning binnen grid', 'layout-grid')}>
-					<GridAlignControl clientId={clientId} />
-				</PanelBody>
+				<GridAlignControl clientId={clientId} />
 			</InspectorControls>
 		</>
 	);
@@ -39,6 +34,6 @@ const withGridAlignControls = createHigherOrderComponent((BlockEdit) => (props) 
 
 addFilter(
 	'editor.BlockEdit',
-	'vwe/with-grid-align-controls',
+	'vwe/grid-align-controls',
 	withGridAlignControls
 );
