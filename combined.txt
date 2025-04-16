@@ -13,7 +13,8 @@ import {
 	alignWide,
 	alignFull,
 } from '@wordpress/icons';
-
+import { __ } from '@wordpress/i18n';
+import { useSupportsClassName } from '../utils/block-support';
 const ALIGN_OPTIONS = [
 	{ label: 'Start', value: 'start', icon: justifyLeft },
 	{ label: 'Center', value: 'center', icon: justifyCenter },
@@ -42,10 +43,14 @@ const GridAlignControl = ({ clientId, toolbar = false }) => {
 
 	const justifyValue = getValueFromClass(className, 'justify');
 	const alignValue = getValueFromClass(className, 'align');
+	const supportsClass = useSupportsClassName(clientId);
 
 	const update = (key, value) => {
 		const newClassName = replaceAlignClass(className, key, value);
-		updateBlockAttributes(clientId, { className: newClassName });
+		updateBlockAttributes(clientId, {
+			className: newClassName,
+			wrapperClassname: !supportsClass ? newClassName : undefined,
+		});
 	};
 
 	if (toolbar) {
@@ -69,19 +74,19 @@ const GridAlignControl = ({ clientId, toolbar = false }) => {
 	return (
 		<>
 			<SelectControl
-				label="Justify content"
+				label={__('Justify content', 'gutengrid')}
 				value={justifyValue}
 				options={[
-					{ label: 'Auto', value: '' },
+					{ label: __('Auto', 'gutengrid'), value: '' },
 					...ALIGN_OPTIONS.map(({ label, value }) => ({ label, value })),
 				]}
 				onChange={(value) => update('justify', value)}
 			/>
 			<SelectControl
-				label="Align content"
+				label={__("Align content", 'gutengrid')}
 				value={alignValue}
 				options={[
-					{ label: 'Auto', value: '' },
+					{ label: __('Auto', 'gutengrid'), value: '' },
 					...ALIGN_OPTIONS.map(({ label, value }) => ({ label, value })),
 				]}
 				onChange={(value) => update('align', value)}
@@ -106,6 +111,8 @@ import {
 	replaceRowValuesInClass
 } from '../css-classname';
 import { getGridWidth } from '../../grid/grid-defaults';
+import { __ } from '@wordpress/i18n';
+import { useSupportsClassName } from '../utils/block-support';
 
 const GridPositionControl = ({ clientId }) => {
 	const { className = '' } = useSelect((select) =>
@@ -123,6 +130,7 @@ const GridPositionControl = ({ clientId }) => {
 	const [colEnd, setColEnd] = useState('');
 	const [rowStart, setRowStart] = useState('');
 	const [rowEnd, setRowEnd] = useState('');
+	const supportsClass = useSupportsClassName(clientId);
 
 	// Initial values bij load of class/device change
 	useEffect(() => {
@@ -141,7 +149,11 @@ const GridPositionControl = ({ clientId }) => {
         if (!isValid(start) || !isValid(end)) return;
     
         const newClassName = replaceColumnValuesInClass(className, device, Number(start), Number(end));
-        updateBlockAttributes(clientId, { className: newClassName });
+		updateBlockAttributes(clientId, {
+			className: newClassName,
+			wrapperClassname: !supportsClass ? newClassName : undefined,
+
+		});
     };
 
 	const updateRowClass = (start, end) => {
@@ -149,7 +161,10 @@ const GridPositionControl = ({ clientId }) => {
         if (!isValid(start) || !isValid(end)) return;
     
         const newClassName = replaceRowValuesInClass(className, device, Number(start), Number(end));
-        updateBlockAttributes(clientId, { className: newClassName });
+		updateBlockAttributes(clientId, {
+			className: newClassName,
+			wrapperClassname: !supportsClass ? newClassName : undefined,
+		});
     };
 
 	const colMax = getGridWidth(device);
@@ -157,7 +172,7 @@ const GridPositionControl = ({ clientId }) => {
 	return (
 		<div className="gutengrid-controls">
 			<NumberControl
-				label="Column start"
+				label={__('Column start', 'gutengrid')}
 				value={colStart}
 				onChange={(value) => {
 					setColStart(value);
@@ -165,10 +180,10 @@ const GridPositionControl = ({ clientId }) => {
 				}}
 				min={1}
 				max={colMax}
-				placeholder="Auto"
+				placeholder={__("Auto", 'gutengrid')}
 			/>
 			<NumberControl
-				label="Column end"
+				label={__('Column end', 'gutengrid')}
 				value={colEnd}
 				onChange={(value) => {
 					setColEnd(value);
@@ -176,27 +191,27 @@ const GridPositionControl = ({ clientId }) => {
 				}}
 				min={1}
 				max={colMax + 1}
-				placeholder="Auto"
+				placeholder={__("Auto", 'gutengrid')}
 			/>
 			<NumberControl
-				label="Row start"
+				label={__("Row start", 'gutengrid')}
 				value={rowStart}
 				onChange={(value) => {
 					setRowStart(value);
 					updateRowClass(value, rowEnd);
 				}}
 				min={1}
-				placeholder="Auto"
+				placeholder={__("Auto", 'gutengrid')}
 			/>
 			<NumberControl
-				label="Row end"
+				label={__("Row end", 'gutengrid')}
 				value={rowEnd}
 				onChange={(value) => {
 					setRowEnd(value);
 					updateRowClass(rowStart, value);
 				}}
 				min={1}
-				placeholder="Auto"
+				placeholder={__("Auto", 'gutengrid')}
 			/>
 		</div>
 	);
@@ -212,6 +227,7 @@ import { useSelect, useDispatch } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 import { replaceColumnValuesInClass, getStartEndColFromClassName } from '../css-classname';
 import { HalfLeftIcon, FullCenterIcon, HalfRightIcon, } from '../../icons';
+import { useSupportsClassName } from '../utils/block-support';
 
 
 const PRESETS = {
@@ -242,17 +258,22 @@ const LayoutPresetToolbar = ({ clientId }) => {
     );
 
     const { updateBlockAttributes } = useDispatch('core/block-editor');
+    const supportsClass = useSupportsClassName(clientId);
 
     const applyPreset = (type) => {
         const [start, end] = PRESETS[device][type];
         const newClassName = replaceColumnValuesInClass(className, device, start, end);
-        updateBlockAttributes(clientId, { className: newClassName });
+        updateBlockAttributes(clientId, {
+            className: newClassName,
+            wrapperClassname: !supportsClass ? newClassName : undefined,
+        });
     };
     const currentMatches = (type) => {
         const [expectedStart, expectedEnd] = PRESETS[device][type];
         const { start, end } = getStartEndColFromClassName(className, device);
         return start === expectedStart && end === expectedEnd;
     };
+
     return (
         <ToolbarGroup label={__('Layout presets', 'gutengrid')}>
             <ToolbarButton
@@ -387,7 +408,7 @@ const withGridPositionControl = createHigherOrderComponent((BlockEdit) => (props
                     </ButtonGroup>
 
                 </PanelBody>
-                <PanelBody title="Grid positie">
+                <PanelBody title={__("Grid position", 'gutengrid')}>
                     <GridPositionControl clientId={clientId} />
                 </PanelBody>
             </InspectorControls>
@@ -408,7 +429,7 @@ import { addFilter } from '@wordpress/hooks';
 import { useSelect, useDispatch } from '@wordpress/data';
 import ResizeGridSingle from '../resize-grid-single';
 import { removeColumnClasses, replaceColumnValuesInClass } from '../css-classname'
-
+import { useSupportsClassName } from '../utils/block-support';
 
 
 const withGridResizeHandles = (BlockListBlock) => (props) => {
@@ -430,6 +451,7 @@ const withGridResizeHandles = (BlockListBlock) => (props) => {
 
 	// Update functie om className aan te passen op basis van drag
 	const { updateBlockAttributes } = useDispatch('core/block-editor');
+	const supportsClass = useSupportsClassName(clientId);
 
 	return (
 		<ResizeGridSingle
@@ -453,7 +475,6 @@ const withGridResizeHandles = (BlockListBlock) => (props) => {
 				if (newStart >= newEnd) {
 					return;
 				}
-
 				const newGridClass = `${prefix}-grid-${newStart}-${newEnd}`;
 				// const cleanClass = removeColumnClasses(attributes.className || '', device);
 				// const newClassName = `${cleanClass} ${newGridClass}`.trim();
@@ -466,6 +487,8 @@ const withGridResizeHandles = (BlockListBlock) => (props) => {
 
 				updateBlockAttributes(clientId, {
 					className: newClassName,
+					wrapperClassname: !supportsClass ? newClassName : undefined,
+
 				});
 			}}
 		>
@@ -537,7 +560,8 @@ const ResizeGridSingle = ({
 	const [hoveredColumn, setHoveredColumn] = useState(null);
 	const className = useSelect((select) => {
 		return select('core/block-editor')
-			.getBlockAttributes(clientId)?.className || '';
+			.getBlockAttributes(clientId)?.className || select('core/block-editor')
+			.getBlockAttributes(clientId)?.wrapperClassname ||'';
 	}, [clientId]);
 
 	const device = useSelect((select) =>
@@ -768,6 +792,19 @@ export default ResizeHandle;
 
  
 
+/**************************** src/grid/utils/block-support.js ****************************/ 
+import { useSelect } from '@wordpress/data';
+import { getBlockType } from '@wordpress/blocks';
+
+export function useSupportsClassName(clientId) {
+	return useSelect((select) => {
+		const block = select('core/block-editor').getBlock(clientId);
+		const blockType = getBlockType(block?.name);
+		return blockType?.supports?.className !== false;
+	}, [clientId]);
+}
+ 
+
 /**************************** src/grid/utils/bo-grid-check.js ****************************/ 
 export function detectBoGridPresence() {
 	const hasBoGrid = document.querySelector('body.is-bo-grid-enabled');
@@ -953,7 +990,7 @@ const BLOCKS_TEMPLATE = [
 	[
 		'core/heading',
 		{
-			content: 'Lourm Ipsum',
+			content: 'Lorum Ipsum',
 			className: 'd-row-1 d-grid-2-6 t-grid-2-6 m-grid-2-5',
 			style: {
 				typography: { fontSize: '48px' },
@@ -964,7 +1001,7 @@ const BLOCKS_TEMPLATE = [
 	[
 		'core/paragraph',
 		{
-			content: 'Lorem ipsum dolor sit amet...',
+			content: 'Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.',
 			className: 'd-row-1 d-grid-6-14 t-grid-6-14 m-grid-5-10',
 		},
 	],
@@ -977,7 +1014,7 @@ const BLOCKS_TEMPLATE = [
 			[
 				'core/button',
 				{
-					text: 'Meer informatie',
+					text: 'Click here',
 					className: 'is-style-fill',
 				},
 			],
@@ -1559,6 +1596,33 @@ export const GridIcon = (props) => (
 
 /**************************** src/index.js ****************************/ 
 /**
+ * @wordpress/i18n
+ * @see https://developer.wordpress.org/block-editor/reference-guides/packages/packages-i18n/
+ *
+ * @package GutenGrid
+ * @file index.js
+ * @version 1.0.0
+ *
+ * @wordpress-plugin
+ * Plugin Name: GutenGrid
+ * Text Domain: gutengrid
+ */
+
+/* globals wp */
+/* eslint-disable no-unused-vars */
+
+/**
+ * Internal dependencies
+ */
+
+/**
+ * This file is the entry point for the gutengrid-editor-script handle.
+ *
+ * @handle gutengrid-editor-script
+ */
+
+
+/**
  * WordPress dependencies
  */
 
@@ -1579,8 +1643,11 @@ import editGrid from './grid/edit';
 import saveGrid from './grid/save';
 import { GridIcon } from './icons';
 
+const unsupportedBlocks = [
+	'gravityforms/form',
+];
+
 export function registerBlock() {
-	console.debug('registerBlock');
 	registerBlockType('gutengrid/grid', {
 		title: __('Layout Grid', 'gutengrid'),
 		description: __(
@@ -1668,15 +1735,37 @@ export function registerBlock() {
 
 }
 registerBlock();
+
+
+// Adding wrapperClass for blocks that don't support className
+wp.hooks.addFilter(
+	'blocks.registerBlockType',
+	'vwe/add-wrapper-classname-attribute',
+	(settings, name) => {
+
+		if (settings.supports?.className !== false || unsupportedBlocks.includes(name)) {
+			return settings;
+		}
+
+		settings.attributes = {
+			...settings.attributes,
+			wrapperClassname: {
+				type: 'string',
+			},
+		};
+		return settings;
+	}
+);
  
 
-/**************************** index.php ****************************/ 
+/**************************** gutengrid.php ****************************/ 
 <?php
+
 /**
  * Plugin Name: GutenGRID – Gutenberg Responsive Interface Designer
  * Plugin URI:  https://github.com/automattic/block-experiments
  * Description: GutenGRID is a Gutenberg block that gives you full control over layout structure through a CSS Breakout Grid system.
- * Version:     0.5.0
+ * Version:     0.5.2
  * Author:      Xmedia
  * Author URI:  https://xmedia.nl
  * Text Domain: gutengrid
@@ -1685,54 +1774,84 @@ registerBlock();
  */
 
 error_log("gutengrid plugin loaded");
-add_action( 'init', function() {
-    $asset_file = include plugin_dir_path( __FILE__ ) . 'build/index.asset.php';
-    error_log(" editor_script: gutengrid-editor-script " . plugins_url( 'build/index.js', __FILE__ ));
+add_action('init', function () {
+    $asset_file = include plugin_dir_path(__FILE__) . 'build/index.asset.php';
     wp_register_script(
         'gutengrid-editor-script',
-        plugins_url( 'build/index.js', __FILE__ ),
+        plugins_url('build/index.js', __FILE__),
         $asset_file['dependencies'],
         $asset_file['version']
     );
 
-    error_log(" style: gutengrid-style " . plugins_url( 'build/style-index.css', __FILE__ ));
+    // TODO: JSON translations don't work. Dont know why, I've given up.
+
+    wp_set_script_translations(
+        'gutengrid-editor-script',
+        'gutengrid',
+        plugin_dir_path(__FILE__) . 'languages'
+    );
+
+
+
     wp_register_style(
         'gutengrid-style',
-        plugins_url( 'build/style-index.css', __FILE__ ),
+        plugins_url('build/style-index.css', __FILE__),
         [],
         $asset_file['version']
     );
 
-    error_log(" editor_style: gutengrid-editor-style " . plugins_url( 'build/index.css', __FILE__ ));
     wp_register_style(
         'gutengrid-editor-style',
-        plugins_url( 'build/index.css', __FILE__ ),
+        plugins_url('build/index.css', __FILE__),
         [],
         $asset_file['version']
     );
 
-    error_log(" register_block_type: gutengrid/grid ");
-    register_block_type( 'gutengrid/grid', [
+    register_block_type('gutengrid/grid', [
         'editor_script' => 'gutengrid-editor-script',
         'style' => 'gutengrid-style',
         'editor_style' => 'gutengrid-editor-style',
-    ] );
-
-    wp_set_script_translations( 'gutengrid-editor-script', 'gutengrid' );
-} );
+    ]);
+});
 
 add_filter(
     'excerpt_allowed_wrapper_blocks',
-    function( $allowed_wrapper_blocks ) {
-        return array_merge( $allowed_wrapper_blocks, [ 'gutengrid/grid', 'gutengrid/grid-column' ] );
+    function ($allowed_wrapper_blocks) {
+        return array_merge($allowed_wrapper_blocks, ['gutengrid/grid', 'gutengrid/grid-column']);
     }
 );
 
- 
 
-/**************************** gutengrid.php ****************************/ 
-<?php
+function gutengrid_load_textdomain()
+{
+    load_plugin_textdomain(
+        'gutengrid',
+        false,
+        plugin_basename(dirname(__FILE__)) . '/languages'
+    );
+}
+add_action('init', 'gutengrid_load_textdomain');
 
+add_filter('render_block', 'gutengrid_apply_wrapper_classes', 10, 3);
+
+function gutengrid_apply_wrapper_classes($block_content, $block, $instance) {
+    if (empty($block['attrs']['wrapperClassname'])) {
+        return $block_content;
+    }
+
+    // Check of class al in de HTML zit
+    $class = $block['attrs']['wrapperClassname'];
+    if (strpos($block_content, $class) !== false) {
+        return $block_content;
+    }
+
+    // Voeg de wrapper toe
+    return sprintf(
+        '<div class="%s grid-block-wrapper">%s</div>',
+        esc_attr($class),
+        $block_content
+    );
+}
  
 
 /**************************** webpack.test.config.js ****************************/ 

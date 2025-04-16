@@ -46,9 +46,11 @@ import editGrid from './grid/edit';
 import saveGrid from './grid/save';
 import { GridIcon } from './icons';
 
+const unsupportedBlocks = [
+	'gravityforms/form',
+];
 
 export function registerBlock() {
-	console.debug('registerBlock');
 	registerBlockType('gutengrid/grid', {
 		title: __('Layout Grid', 'gutengrid'),
 		description: __(
@@ -140,18 +142,20 @@ registerBlock();
 
 // Adding wrapperClass for blocks that don't support className
 wp.hooks.addFilter(
-    'blocks.registerBlockType',
-    'vwe/add-wrapper-classname-attribute',
-    (settings, name) => {
-        if (settings.supports?.className !== false) return settings;
+	'blocks.registerBlockType',
+	'vwe/add-wrapper-classname-attribute',
+	(settings, name) => {
 
-        settings.attributes = {
-            ...settings.attributes,
-            wrapperClassname: {
-                type: 'string',
-                default: '',
-            },
-        };
-        return settings;
-    }
+		if (settings.supports?.className !== false || unsupportedBlocks.includes(name)) {
+			return settings;
+		}
+
+		settings.attributes = {
+			...settings.attributes,
+			wrapperClassname: {
+				type: 'string',
+			},
+		};
+		return settings;
+	}
 );

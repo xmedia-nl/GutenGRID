@@ -17,7 +17,7 @@ const withGridResizeHandles = (BlockListBlock) => (props) => {
 	}, [clientId]);
 
 	// Sla wrapper-achtige bloktypes over
-	const skipTypes = ['core/group', 'core/columns'];
+	const skipTypes = [];
 	if (!isDirectChildOfGrid || skipTypes.includes(name)) {
 		return <BlockListBlock {...props} />;
 	}
