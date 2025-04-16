@@ -65,6 +65,25 @@ export function replaceRowValuesInClass(className, device, start, end) {
 
 	return `${cleaned} ${newClass}`.trim();
 }
+export function nudgeRowValuesInClass(className = '', device = 'Desktop', direction = 1) {
+	const prefix = device.charAt(0).toLowerCase();
+	const rowRegex = new RegExp(`${prefix}-row-(\\d+)(?:-(\\d+))?`);
+	const match = className.match(rowRegex);
+
+	if (!match) {
+		return className;
+	}
+
+	let start = parseInt(match[1]);
+	let end = match[2] ? parseInt(match[2]) : start + 1;
+
+	start += direction;
+	end += direction;
+
+	const newClass = `${prefix}-row-${start}-${end}`;
+	const cleaned = className.replace(rowRegex, '').trim();
+	return `${cleaned} ${newClass}`.trim();
+}
 export function getStartEndColFromClassName(className = '', device = 'Desktop') {
 
 	const prefix = device.charAt(0).toLowerCase();
@@ -80,4 +99,16 @@ export function getStartEndRowFromClassName(className = '', device = 'Desktop') 
 			end: match[2] ? parseInt(match[2], 10) : undefined,
 		}
 		: { start: null, end: null };
+}
+export function getStartEndFromDom(el, device) {
+	if (!el) return { start: 1, end: 12 };
+	const prefix = device.charAt(0).toLowerCase();
+	const match = Array.from(el.classList).find((cls) =>
+		new RegExp(`${prefix}-grid-(\\d+)-(\\d+)`).test(cls)
+	);
+	if (match) {
+		const [, start, end] = match.match(/(\d+)-(\d+)/);
+		return { start: parseInt(start), end: parseInt(end) };
+	}
+	return { start: 1, end: 12 };
 }

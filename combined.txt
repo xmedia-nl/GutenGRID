@@ -444,7 +444,7 @@ const withGridResizeHandles = (BlockListBlock) => (props) => {
 	}, [clientId]);
 
 	// Sla wrapper-achtige bloktypes over
-	const skipTypes = ['core/group', 'core/columns'];
+	const skipTypes = [];
 	if (!isDirectChildOfGrid || skipTypes.includes(name)) {
 		return <BlockListBlock {...props} />;
 	}
@@ -530,15 +530,53 @@ addFilter(
 
  
 
+/**************************** src/grid/resize-grid-single/drag-handle.js ****************************/ 
+// src/grid/resize-grid-single/drag-handle.js
+import { useEffect, useRef } from '@wordpress/element';
+import classnames from 'classnames';
+
+const DragHandle = ({ onDragStart, isSelected }) => {
+    const handleRef = useRef(null);
+
+	useEffect(() => {
+		const handle = handleRef.current;
+		if (!handle || !onDragStart) return;
+
+		const onMouseDown = (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			onDragStart(e);
+		};
+
+		handle.addEventListener('mousedown', onMouseDown);
+		handle.addEventListener('touchstart', onMouseDown);
+
+		return () => {
+			handle.removeEventListener('mousedown', onMouseDown);
+			handle.removeEventListener('touchstart', onMouseDown);
+		};
+	}, [onDragStart]);
+
+	const classes = classnames('gutengrid__drag-handle', {
+		'is-selected': isSelected,
+	});
+
+	return <div className={classes} ref={handleRef}></div>;
+};
+
+export default DragHandle;
+
+ 
+
 /**************************** src/grid/resize-grid-single/index.js ****************************/ 
 import { useRef, useState, useEffect } from '@wordpress/element';
 import classnames from 'classnames';
 // import ResizeHandle from '../resize-grid-single/resize-handle';
 import ResizeHandle from './resize-handle';
 import { useSelect } from '@wordpress/data';
-import { getStartEndColFromClassName } from '../css-classname';
+import { getStartEndColFromClassName, getStartEndFromDom } from '../css-classname';
 import { detectHoveredCol } from '../utils/bo-grid-check';
-
+import DragHandle from './drag-handle';
 
 const ResizeGridSingle = ({
 	// className = '',
@@ -550,18 +588,32 @@ const ResizeGridSingle = ({
 }) => {
 	const containerRef = useRef(null);
 	const [resizing, setResizing] = useState(false);
-	const [dragState, setDragState] = useState({
+	const [dragging, setDragging] = useState(false);
+	const [dragState, _setDragState] = useState({
 		xPos: 0,
 		width: 0,
 		height: 0,
 		top: 0,
 		direction: null,
+		start: 0,
+		end: 0,
+		span: 0,
+		gridPixelWidth: 1,
+		initialX: 0,
 	});
+	const dragStateRef = useRef(dragState);
+
+	// Vervang setDragState door deze custom functie:
+	const setDragState = (val) => {
+		const newVal = typeof val === 'function' ? val(dragStateRef.current) : val;
+		dragStateRef.current = newVal;
+		_setDragState(newVal);
+	};
 	const [hoveredColumn, setHoveredColumn] = useState(null);
 	const className = useSelect((select) => {
 		return select('core/block-editor')
 			.getBlockAttributes(clientId)?.className || select('core/block-editor')
-			.getBlockAttributes(clientId)?.wrapperClassname ||'';
+				.getBlockAttributes(clientId)?.wrapperClassname || '';
 	}, [clientId]);
 
 	const device = useSelect((select) =>
@@ -667,10 +719,10 @@ const ResizeGridSingle = ({
 				newStart = hoveredCol ? hoveredCol : prev.start;
 			}
 			if (prev.direction === 'right') {
-				newEnd = hoveredCol ? hoveredCol+1 : prev.end;
+				newEnd = hoveredCol ? hoveredCol + 1 : prev.end;
 			}
 
-			
+
 			onResize({
 				direction: prev.direction,
 				start: newStart,
@@ -688,7 +740,7 @@ const ResizeGridSingle = ({
 
 	};
 
-	
+
 	const onMouseUp = () => {
 
 		setResizing(false);
@@ -703,12 +755,100 @@ const ResizeGridSingle = ({
 		setHoveredColumn(null);
 	};
 
+
+
+
+	/***
+	 * Dragging the entire block
+	 */
+	const onDragStart = (e) => {
+		const block = containerRef.current;
+		if (!block) return;
+
+		const overlay = containerRef.current?.closest('.wp-block-gutengrid-editor')?.querySelector('.gutengrid-overlay');
+		if (overlay) {
+			overlay.classList.add('is-resizing');
+		}
+
+		const { start, end } = getStartEndFromDom(block, device); // of getStartEndColFromClassName(className, device)
+		const parentWidth = block.parentNode?.offsetWidth || 1200;
+		const pixelPerColumn = parentWidth / gridWidth;
+
+		console.log('Dragstart...', {
+			start,
+			end,
+		});
+
+		setDragState((prev) => ({
+			...prev,
+			start,
+			end,
+			span: end - start,
+			gridPixelWidth: pixelPerColumn,
+			initialX: e.clientX,
+		}));
+
+		setDragging(true);
+
+		document.addEventListener('mousemove', onDrag);
+		document.addEventListener('mouseup', onDragEnd);
+		e.preventDefault();
+		e.stopPropagation();
+	};
+
+	const onDrag = (e) => {
+		const { span } = dragStateRef.current;
+		const hoveredCol = detectHoveredCol(e.clientX, e.clientY);
+		if (!onResize || !hoveredCol || span < 1) return;
+		
+		
+
+		let newEnd = hoveredCol+1;
+		let newStart = newEnd - span;
+	
+		if (newStart < 1) {
+			newStart = 1;
+			newEnd = newStart + span;
+		}
+		// if (newEnd > gridWidth + 1) {
+		// 	newEnd = gridWidth + 1;
+		// 	newStart = newEnd - span;
+		// }
+	
+		onResize({
+			direction: 'move',
+			start: newStart,
+			end: newEnd,
+			device,
+		});
+	
+		console.log('Dragging to hoveredCol', hoveredCol, {
+			start: newStart,
+			end: newEnd,
+		});
+	};
+
+	const onDragEnd = () => {
+		setDragging(false);
+		document.removeEventListener('mousemove', onDrag);
+		document.removeEventListener('mouseup', onDragEnd);
+		const overlay = containerRef.current?.closest('.wp-block-gutengrid-editor')?.querySelector('.gutengrid-overlay');
+		if (overlay) {
+			overlay.classList.remove('is-resizing');
+		}
+
+		const { start, end } = getStartEndColFromClassName(className, device);
+		console.log('Dragend...', {
+			start,
+			end,
+		});
+	};
+
 	const wrapperClasses = classnames(className, {
 		'wp-block-gutengrid__resizing': resizing,
 		'wp-block-gutengrid__resizable': true,
+		'gutengrid-dragging': dragging,
 	});
-
-
 
 	return (
 		<div
@@ -726,6 +866,7 @@ const ResizeGridSingle = ({
 					top={dragState.top}
 					isSelected={isSelected}
 				/>
+				
 			)}
 
 			{/* Static resize handles */}
@@ -739,6 +880,8 @@ const ResizeGridSingle = ({
 					data-resize-left
 				/>
 			</span>
+			<DragHandle onDragStart={onDragStart} isSelected={isSelected} />
+
 
 			{children}
 		</div>
@@ -925,6 +1068,18 @@ export function getStartEndRowFromClassName(className = '', device = 'Desktop') 
 			end: match[2] ? parseInt(match[2], 10) : undefined,
 		}
 		: { start: null, end: null };
+}
+export function getStartEndFromDom(el, device) {
+	if (!el) return { start: 1, end: 12 };
+	const prefix = device.charAt(0).toLowerCase();
+	const match = Array.from(el.classList).find((cls) =>
+		new RegExp(`${prefix}-grid-(\\d+)-(\\d+)`).test(cls)
+	);
+	if (match) {
+		const [ , start, end ] = match.match(/(\d+)-(\d+)/);
+		return { start: parseInt(start), end: parseInt(end) };
+	}
+	return { start: 1, end: 12 };
 }
  
 
@@ -1765,7 +1920,7 @@ wp.hooks.addFilter(
  * Plugin Name: GutenGRID – Gutenberg Responsive Interface Designer
  * Plugin URI:  https://github.com/automattic/block-experiments
  * Description: GutenGRID is a Gutenberg block that gives you full control over layout structure through a CSS Breakout Grid system.
- * Version:     0.5.2
+ * Version:     0.5.3
  * Author:      Xmedia
  * Author URI:  https://xmedia.nl
  * Text Domain: gutengrid

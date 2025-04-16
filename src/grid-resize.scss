@@ -67,3 +67,42 @@ body.is-resizing [data-type="gutengrid/grid"] {
 .wp-blocks-gutengrid__resize-handles .components-resizable-box__handle-left {
 	left: -5px;
 }
+
+
+/***
+Dragging entgire block */
+
+.gutengrid__drag-handle-group {
+	position: absolute;
+	top: 0;
+	right: 8px;
+	display: none;
+	flex-direction: column;
+	gap: 4px;
+	z-index: 10;
+
+	.gutengrid__drag-handle,
+	.gutengrid__nudge-button {
+		background: #007cba;
+		color: white;
+		cursor: pointer;
+		border: none;
+		padding: 2px 6px;
+		font-family: 'dashicons';
+		user-select: none;
+		text-align: center;
+	}
+
+	.gutengrid__drag-handle {
+		cursor: grab;
+	}
+
+	.gutengrid-dragging & .gutengrid__drag-handle {
+		cursor: grabbing;
+	}
+}
+
+[data-type="gutengrid/grid"].is-selected .gutengrid__drag-handle-group {
+	display: flex;
+}
+
