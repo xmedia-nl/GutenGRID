@@ -33,19 +33,16 @@ This plugin is heavily inspired by:
 
 ## ✅ Features (planned)
 
-- Responsive layout based on CSS Grid
-- Grid snapping with draggable handles
-- Optional full-width breakout per block
-- Theme-agnostic support via CSS class integration
+✅ Responsive layout based on CSS Grid
+✅ Grid snapping with draggable handles
+✅ Optional full-width breakout per block
+TODO: Theme-agnostic support via CSS class integration
 
 ---
 
 ## 📋 TODO
 
 - [ ] Incoorporate `bo-grid` classes into plugin or provide fallback styles  
-- [ ] Make left handle work as offset controller  
-- [ ] Make GutenGRID use the BO grid structure instead of hardcoded 12 columns  
-- [ ] Optimize snapping logic for grid handles  
 
 ---
 

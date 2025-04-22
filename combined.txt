@@ -531,21 +531,20 @@ addFilter(
  
 
 /**************************** src/grid/resize-grid-single/drag-handle.js ****************************/ 
-// src/grid/resize-grid-single/drag-handle.js
 import { useEffect, useRef } from '@wordpress/element';
 import classnames from 'classnames';
 
-const DragHandle = ({ onDragStart, isSelected }) => {
-    const handleRef = useRef(null);
+const DragAndNudgeHandle = ({ onStartDrag, onNudgeUp, onNudgeDown, isSelected }) => {
+	const dragRef = useRef(null);
 
 	useEffect(() => {
-		const handle = handleRef.current;
-		if (!handle || !onDragStart) return;
+		const handle = dragRef.current;
+		if (!handle || !onStartDrag) return;
 
 		const onMouseDown = (e) => {
 			e.preventDefault();
 			e.stopPropagation();
-			onDragStart(e);
+			onStartDrag(e);
 		};
 
 		handle.addEventListener('mousedown', onMouseDown);
@@ -555,16 +554,22 @@ const DragHandle = ({ onDragStart, isSelected }) => {
 			handle.removeEventListener('mousedown', onMouseDown);
 			handle.removeEventListener('touchstart', onMouseDown);
 		};
-	}, [onDragStart]);
+	}, [onStartDrag]);
 
-	const classes = classnames('gutengrid__drag-handle', {
+	const classes = classnames('gutengrid__drag-handle-group', {
 		'is-selected': isSelected,
 	});
 
-	return <div className={classes} ref={handleRef}></div>;
+	return (
+		<div className={classes}>
+			<div ref={dragRef} className="gutengrid__drag-handle"></div>
+			<button className="gutengrid__nudge-button" onClick={onNudgeUp}></button>
+			<button className="gutengrid__nudge-button" onClick={onNudgeDown}></button>
+		</div>
+	);
 };
 
-export default DragHandle;
+export default DragAndNudgeHandle;
 
  
 
@@ -574,9 +579,14 @@ import classnames from 'classnames';
 // import ResizeHandle from '../resize-grid-single/resize-handle';
 import ResizeHandle from './resize-handle';
 import { useSelect } from '@wordpress/data';
-import { getStartEndColFromClassName, getStartEndFromDom } from '../css-classname';
+import { getStartEndColFromClassName, getStartEndFromDom, nudgeRowValuesInClass } from '../css-classname';
 import { detectHoveredCol } from '../utils/bo-grid-check';
-import DragHandle from './drag-handle';
+import DragAndNudgeHandle from './drag-handle';
+import { useSupportsClassName } from '../utils/block-support';
+import { useDispatch } from '@wordpress/data';
+
+
+
 
 const ResizeGridSingle = ({
 	// className = '',
@@ -620,6 +630,8 @@ const ResizeGridSingle = ({
 		select('core/edit-post')?.__experimentalGetPreviewDeviceType?.() || 'Desktop'
 	);
 
+	const { updateBlockAttributes } = useDispatch('core/block-editor');
+	const supportsClass = useSupportsClassName(clientId);
 	// Apply grid classes to the editor wrapper div (like d-grid-1-6 etc.)
 	useEffect(() => {
 		const el = containerRef.current;
@@ -774,11 +786,6 @@ const ResizeGridSingle = ({
 		const parentWidth = block.parentNode?.offsetWidth || 1200;
 		const pixelPerColumn = parentWidth / gridWidth;
 
-		console.log('Dragstart...', {
-			start,
-			end,
-		});
-
 		setDragState((prev) => ({
 			...prev,
 			start,
@@ -800,12 +807,12 @@ const ResizeGridSingle = ({
 		const { span } = dragStateRef.current;
 		const hoveredCol = detectHoveredCol(e.clientX, e.clientY);
 		if (!onResize || !hoveredCol || span < 1) return;
-		
-		
 
-		let newEnd = hoveredCol+1;
+
+
+		let newEnd = hoveredCol + 1;
 		let newStart = newEnd - span;
-	
+
 		if (newStart < 1) {
 			newStart = 1;
 			newEnd = newStart + span;
@@ -814,17 +821,12 @@ const ResizeGridSingle = ({
 		// 	newEnd = gridWidth + 1;
 		// 	newStart = newEnd - span;
 		// }
-	
+
 		onResize({
 			direction: 'move',
 			start: newStart,
 			end: newEnd,
 			device,
-		});
-	
-		console.log('Dragging to hoveredCol', hoveredCol, {
-			start: newStart,
-			end: newEnd,
 		});
 	};
 
@@ -838,9 +840,13 @@ const ResizeGridSingle = ({
 		}
 
 		const { start, end } = getStartEndColFromClassName(className, device);
-		console.log('Dragend...', {
-			start,
-			end,
+	};
+	const handleNudge = (direction) => {
+		const newClassName = nudgeRowValuesInClass(className, device, direction);
+
+		updateBlockAttributes(clientId, {
+			className: newClassName,
+			wrapperClassname: !supportsClass ? newClassName : undefined,
 		});
 	};
 
@@ -866,7 +872,7 @@ const ResizeGridSingle = ({
 					top={dragState.top}
 					isSelected={isSelected}
 				/>
-				
+
 			)}
 
 			{/* Static resize handles */}
@@ -880,8 +886,12 @@ const ResizeGridSingle = ({
 					data-resize-left
 				/>
 			</span>
-			<DragHandle onDragStart={onDragStart} isSelected={isSelected} />
-
+			<DragAndNudgeHandle
+				onStartDrag={onDragStart}
+				onNudgeUp={() => handleNudge(-1)}
+				onNudgeDown={() => handleNudge(1)}
+				isSelected={isSelected}
+			/>
 
 			{children}
 		</div>
@@ -1053,6 +1063,25 @@ export function replaceRowValuesInClass(className, device, start, end) {
 
 	return `${cleaned} ${newClass}`.trim();
 }
+export function nudgeRowValuesInClass(className = '', device = 'Desktop', direction = 1) {
+	const prefix = device.charAt(0).toLowerCase();
+	const rowRegex = new RegExp(`${prefix}-row-(\\d+)(?:-(\\d+))?`);
+	const match = className.match(rowRegex);
+
+	if (!match) {
+		return className;
+	}
+
+	let start = parseInt(match[1]);
+	let end = match[2] ? parseInt(match[2]) : start + 1;
+
+	start += direction;
+	end += direction;
+
+	const newClass = `${prefix}-row-${start}-${end}`;
+	const cleaned = className.replace(rowRegex, '').trim();
+	return `${cleaned} ${newClass}`.trim();
+}
 export function getStartEndColFromClassName(className = '', device = 'Desktop') {
 
 	const prefix = device.charAt(0).toLowerCase();
@@ -1076,7 +1105,7 @@ export function getStartEndFromDom(el, device) {
 		new RegExp(`${prefix}-grid-(\\d+)-(\\d+)`).test(cls)
 	);
 	if (match) {
-		const [ , start, end ] = match.match(/(\d+)-(\d+)/);
+		const [, start, end] = match.match(/(\d+)-(\d+)/);
 		return { start: parseInt(start), end: parseInt(end) };
 	}
 	return { start: 1, end: 12 };
