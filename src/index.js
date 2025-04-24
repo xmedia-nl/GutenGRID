@@ -40,6 +40,7 @@ import '../editor.scss';
  */
 import './grid/filters/withGridResizeHandles';
 import './grid/filters/withGridPositionControl';
+
 // import './grid/filters/withGridAlignControls'; // need to rethink this. Blocks that support alignment usually have this already.
 
 import editGrid from './grid/edit';
@@ -131,6 +132,37 @@ export function registerBlock() {
 			],
 		},
 		attributes: {
+			backgroundType: {
+				type: 'string',
+				default: 'none'
+			},
+			backgroundColorSlug: {
+				type: 'string',
+				default: ''
+			},
+			backgroundGradientSlug: {
+				type: 'string',
+				default: ''
+			},
+			backgroundImage: {
+				type: 'string',
+				default: ''
+			},
+			backgroundWidth: {
+				type: 'string',
+				default: 'main'
+			},
+			uniqueId: {
+				type: 'string'
+			},
+			maxRowClasses: {
+				type: 'object',
+				default: {}
+			},
+			padding: {
+				type: 'object',
+				default: {} // bijvoorbeeld: { desktop: 's', tablet: 'm', mobile: 'c-60' }
+			}
 		},
 		edit: editGrid,
 		save: saveGrid,

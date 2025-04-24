@@ -3,32 +3,40 @@
  */
 
 
-export function removeColumnClasses(classes, device) {
-	if (!classes) {
-		return classes;
-	}
+export function removeColumnClasses(classes, device = 'd') {
+	if (!classes) return classes;
 
-	const deviceTypeId = device.charAt(0).toLowerCase();
-	const classString = String(classes); // ← Veiligstellen tegen arrays/undefined
-
-	return classString
+	const classString = String(classes);
+	let result = classString
 		.replace(/column\d-\w*-grid__\w*-\d*/g, '')
 		.replace(/column\d-grid__\w*-\d*/g, '')
-		.replace(/\s{2,}/, '')
+		.replace(/\s{2,}/, ' ')
 		.replace(/wp-block-jetpack-layout-gutter__\w*/, '')
 		.replace(/is-vertically-aligned-\w*/, '')
 		.replace(/is-style-[A-Za-z-_]*/, '')
-		.replace(new RegExp(`${deviceTypeId}-grid-\\d+-\\d+`, 'g'), '')
-		.replace(/are-vertically-aligned-\w*/)
-		.trim();
+		.replace(/are-vertically-aligned-\w*/, '');
+
+	// Als 'all', strip dan alle grid-classes voor desktop (d), tablet (t) en mobile (m)
+	if (device === 'all') {
+		result = result
+			.replace(/d-grid-\d+-\d+/g, '')
+			.replace(/t-grid-\d+-\d+/g, '')
+			.replace(/m-grid-\d+-\d+/g, '');
+	} else {
+		const deviceTypeId = device.charAt(0).toLowerCase();
+		result = result.replace(new RegExp(`${deviceTypeId}-grid-\\d+-\\d+`, 'g'), '');
+	}
+
+	return result.trim();
 }
+
 export function removeRowClasses(classes, device) {
 	if (!classes) {
 		return classes;
 	}
 
 	const deviceTypeId = device.charAt(0).toLowerCase();
-	const classString = String(classes); // ← Veiligstellen tegen arrays/undefined
+	const classString = String(classes);
 
 	return classString
 		.replace(new RegExp(`${deviceTypeId}-row-\\d+-\\d+`, 'g'), '')

@@ -255,18 +255,21 @@
 
 
 .has-preview-style {
-	.block-editor-inner-blocks{
+	.block-editor-inner-blocks {
 		grid-column: 1/-1 !important;
-		
+
 	}
-	.preview-col{
-		height:100%;
+
+	.preview-col {
+		height: 100%;
 	}
-	.preview-handles{
-		border-left:2px solid rgb(125, 125, 255);
-		border-right:2px solid rgb(125, 125, 255);
+
+	.preview-handles {
+		border-left: 2px solid rgb(125, 125, 255);
+		border-right: 2px solid rgb(125, 125, 255);
 		position: relative;
-		&::before{
+
+		&::before {
 			content: '';
 			position: absolute;
 			top: calc(50% - 7px);
@@ -276,7 +279,8 @@
 			height: 15px;
 			background-color: blue;
 		}
-		&::after{
+
+		&::after {
 			content: '';
 			position: absolute;
 			top: calc(50% - 7px);
@@ -288,4 +292,24 @@
 		}
 	}
 }
-
+.block-editor-inner-blocks{
+	z-index: 1;
+	
+}
+.gutengrid-background {
+	grid-row: 1 / -1;
+	height: 100%;
+	&__wrapper {
+		width: 100%;
+		height: 100%;
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		pointer-events: none;
+		display: grid;
+		z-index: 0;
+		align-content: stretch !important;
+	}
+}

@@ -99,6 +99,151 @@ export default GridAlignControl;
 
  
 
+/**************************** src/grid/components/grid-background-control.js ****************************/ 
+// grid-background-control.js
+import {
+    PanelBody,
+    SelectControl,
+    Button,
+} from '@wordpress/components';
+import {
+    MediaUpload,
+    __experimentalColorGradientControl as ColorGradientControl} from '@wordpress/block-editor';
+
+import { __ } from '@wordpress/i18n';
+import { useSelect, useDispatch } from '@wordpress/data';
+
+const GridBackgroundControl = ({ clientId }) => {
+    const {
+        backgroundType,
+        backgroundColorSlug,
+        backgroundGradientSlug,
+        backgroundImage,
+        backgroundWidth,
+    } = useSelect(
+        (select) => select('core/block-editor').getBlockAttributes(clientId),
+        [clientId]
+    );
+
+    const { updateBlockAttributes } = useDispatch('core/block-editor');
+
+    const themeSettings = useSelect((select) => select('core/block-editor').getSettings());
+    const themeColors = themeSettings.colors || [];
+    const themeGradients = themeSettings.gradients || [];
+
+    const setAttr = (key, value) => {
+        updateBlockAttributes(clientId, {
+            [key]: value,
+        });
+    };
+
+    const getColorValue = () => {
+        if (!backgroundColorSlug) return '';
+        const match = themeColors.find((c) => c.slug === backgroundColorSlug);
+        return match?.color || '';
+    };
+
+    const getGradientValue = () => {
+        if (!backgroundGradientSlug) return '';
+        const match = themeGradients.find((g) => g.slug === backgroundGradientSlug);
+        return match?.gradient || '';
+    };
+
+    return (
+        <PanelBody title={__('Background settings', 'gutengrid')}>
+            <SelectControl
+                label={__('Background type', 'gutengrid')}
+                value={backgroundType || 'none'}
+                options={[
+                    { label: __('None', 'gutengrid'), value: 'none' },
+                    { label: __('Color', 'gutengrid'), value: 'color' },
+                    { label: __('Gradient', 'gutengrid'), value: 'gradient' },
+                    { label: __('Image', 'gutengrid'), value: 'image' },
+                ]}
+                onChange={(val) => {
+                    // Reset related properties when changing type
+                    const updates = { backgroundType: val };
+                    console.log('Background type changed:', val);
+                    if (val === 'color') {
+                        updates.backgroundGradientSlug = '';
+                        updates.backgroundImage = '';
+                    } else if (val === 'gradient') {
+                        updates.backgroundColorSlug = '';
+                        updates.backgroundImage = '';
+                    } else if (val === 'image') {
+                        updates.backgroundColorSlug = '';
+                        updates.backgroundGradientSlug = '';
+                    } else if (val === 'none') {
+                        updates.backgroundColorSlug = '';
+                        updates.backgroundGradientSlug = '';
+                        updates.backgroundImage = '';
+                    }
+
+                    updateBlockAttributes(clientId, updates);
+                    console.log('Updated attributes:', updates);
+                }}
+            />
+
+            {backgroundType === 'color' && themeColors.length > 0 && (
+                <ColorGradientControl
+                    colors={themeColors}
+                    value={getColorValue()}
+                    onColorChange={(value) => {
+                        const match = themeColors.find((c) => c.color === value);
+                        if (!match) {
+                            console.warn('[GutenGrid] Geen match voor color:', value);
+                        }
+                        setAttr('backgroundColorSlug', match?.slug || '');
+                    }}
+                    clearable
+                />
+            )}
+
+            {backgroundType === 'gradient' && themeGradients.length > 0 && (
+                <ColorGradientControl
+                    gradients={themeGradients}
+                    value={getGradientValue()}
+                    onGradientChange={(value) => {
+                        const match = themeGradients.find((g) => g.gradient === value);
+                        setAttr('backgroundGradientSlug', match?.slug || '');
+                    }}
+                    clearable
+                />
+            )}
+
+            {backgroundType === 'image' && (
+                <MediaUpload
+                    onSelect={(media) => {
+                        if (media?.url) {
+                            setAttr('backgroundImage', media.url);
+                        }
+                    }}
+                    type="image"
+                    render={({ open }) => (
+                        <Button onClick={open} isSecondary>
+                            {__('Select background image', 'gutengrid')}
+                        </Button>
+                    )}
+                />
+            )}
+
+            <SelectControl
+                label={__('Background width', 'gutengrid')}
+                value={backgroundWidth || 'main'}
+                options={[
+                    { label: __('Main grid (2–14)', 'gutengrid'), value: 'main' },
+                    { label: __('Full width', 'gutengrid'), value: 'full' },
+                ]}
+                onChange={(val) => setAttr('backgroundWidth', val)}
+            />
+        </PanelBody>
+    );
+};
+
+export default GridBackgroundControl;
+
+ 
+
 /**************************** src/grid/components/grid-position-control.js ****************************/ 
 import { __experimentalNumberControl as NumberControl } from '@wordpress/components';
 import { useSelect, useDispatch } from '@wordpress/data';
@@ -348,10 +493,9 @@ addFilter(
 /**************************** src/grid/filters/withGridPositionControl.js ****************************/ 
 import { createHigherOrderComponent } from '@wordpress/compose';
 import { useSelect, useDispatch } from '@wordpress/data';
-import { InspectorControls, BlockControls  } from '@wordpress/block-editor';
-import { PanelBody, TextControl, ButtonGroup, Button, } from '@wordpress/components';
+import { InspectorControls, BlockControls } from '@wordpress/block-editor';
+import { PanelBody, ButtonGroup, Button, } from '@wordpress/components';
 import { addFilter } from '@wordpress/hooks';
-// import {updateInspectorDevice, getInspectorMode} from '../../grid/edit.js';
 import { __ } from '@wordpress/i18n';
 import { getLayouts } from '../../constants';
 
@@ -949,12 +1093,40 @@ export default ResizeHandle;
 import { useSelect } from '@wordpress/data';
 import { getBlockType } from '@wordpress/blocks';
 
+import { getStartEndRowFromClassName } from './../css-classname';
+
 export function useSupportsClassName(clientId) {
 	return useSelect((select) => {
 		const block = select('core/block-editor').getBlock(clientId);
 		const blockType = getBlockType(block?.name);
 		return blockType?.supports?.className !== false;
 	}, [clientId]);
+}
+
+export function getMaxRowClassNames(innerBlocks) {
+	const max = { d: 1, t: 1, m: 1 };
+
+	innerBlocks.forEach((block) => {
+		console.log('Row check for block:', block);
+		const className = block.attributes?.className || '';
+		['Desktop', 'Tablet', 'Mobile'].forEach((device) => {
+			let { start, end } = getStartEndRowFromClassName(className, device);
+			console.log('Start and end:', device, start, end);
+
+			// start might not be set if the block is locked in one row (eg. d-row-2 instead of from-to like d-row-2-3)
+			// if end is not set, we assume it is the same as start
+			end = end || start;
+			if (end && end > max[device.charAt(0).toLowerCase()]) {
+				max[device.charAt(0).toLowerCase()] = end;
+			}
+		});
+	});
+
+	return [
+		`d-row-1-${max.d}`,
+		`t-row-1-${max.t}`,
+		`m-row-1-${max.m}`,
+	];
 }
  
 
@@ -1007,7 +1179,7 @@ export function removeColumnClasses(classes, device) {
 	}
 
 	const deviceTypeId = device.charAt(0).toLowerCase();
-	const classString = String(classes); // ← Veiligstellen tegen arrays/undefined
+	const classString = String(classes);
 
 	return classString
 		.replace(/column\d-\w*-grid__\w*-\d*/g, '')
@@ -1026,7 +1198,7 @@ export function removeRowClasses(classes, device) {
 	}
 
 	const deviceTypeId = device.charAt(0).toLowerCase();
-	const classString = String(classes); // ← Veiligstellen tegen arrays/undefined
+	const classString = String(classes);
 
 	return classString
 		.replace(new RegExp(`${deviceTypeId}-row-\\d+-\\d+`, 'g'), '')
@@ -1113,104 +1285,63 @@ export function getStartEndFromDom(el, device) {
  
 
 /**************************** src/grid/edit.js ****************************/ 
-/**
- * External dependencies
- */
-import { times } from 'lodash';
+// Edit.js
+// External dependencies
 import classnames from 'classnames';
 
-/**
- * WordPress dependencies
- */
-
+// WordPress dependencies
 import {
 	InnerBlocks,
 	InspectorControls,
 	BlockControls,
 	BlockVerticalAlignmentToolbar,
 } from '@wordpress/block-editor';
-import { Component, createRef } from '@wordpress/element';
+import { Component, createRef, useEffect } from '@wordpress/element';
 import {
 	PanelBody,
-	TextControl,
 	ButtonGroup,
 	Button,
-	IconButton,
-	Placeholder,
-	ToggleControl,
-	SelectControl,
 	Disabled,
+	Notice,
 } from '@wordpress/components';
+import { select } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
-import { ENTER, SPACE } from '@wordpress/keycodes';
 import { compose } from '@wordpress/compose';
+
+// Internal utilities & constants
 import { detectBoGridPresence } from './utils/bo-grid-check';
-
-
-/**
- * Internal dependencies
- */
-
-import {
-	removeColumnClasses
-} from './css-classname';
-import {
-	getLayouts,
-} from '../constants';
+import { removeColumnClasses } from './css-classname';
+import { getLayouts } from '../constants';
 import { getGridWidth } from './grid-defaults';
-import PreviewDevice from './preview-device';
-import { Notice } from '@wordpress/components';
 
+// Internal components
+import GridBackgroundControl from './components/grid-background-control';
+import GridBackground from './grid-background';
+import PreviewDevice from './preview-device';
+import GridOverlay from './grid-overlay';
+import { getMaxRowClassNames } from './utils/block-support';
+
+// Internal HOCs
 import {
 	withUpdateAlignment,
 	withSetPreviewDeviceType,
 	withPreviewDeviceType,
 } from './higher-order';
-import GridOverlay from './grid-overlay';
 
-const MINIMUM_RESIZE_SIZE = 50; // Empirically determined to be a good size
 
+
+const MINIMUM_RESIZE_SIZE = 50;
 const BLOCKS_TEMPLATE = [
-	[
-		'core/heading',
-		{
-			content: 'Lorum Ipsum',
-			className: 'd-row-1 d-grid-2-6 t-grid-2-6 m-grid-2-5',
-			style: {
-				typography: { fontSize: '48px' },
-				color: { text: '#ffffff' },
-			},
-		},
-	],
-	[
-		'core/paragraph',
-		{
-			content: 'Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.',
-			className: 'd-row-1 d-grid-6-14 t-grid-6-14 m-grid-5-10',
-		},
-	],
-	[
-		'core/buttons',
-		{
-			className: 'd-row-2 d-grid-2-6 t-grid-2-6 m-grid-2-10',
-		},
-		[
-			[
-				'core/button',
-				{
-					text: 'Click here',
-					className: 'is-style-fill',
-				},
-			],
-		],
-	],
+	['core/heading', { content: 'Lorum Ipsum', className: 'd-row-1 d-grid-2-6 t-grid-2-6 m-grid-2-5' }],
+	['core/paragraph', { content: 'Lorem ipsum...', className: 'd-row-1 d-grid-6-14 t-grid-6-14 m-grid-5-10' }],
+	['core/buttons', { className: 'd-row-2 d-grid-2-6 t-grid-2-6 m-grid-2-10' }, [[
+		'core/button', { text: 'Click here', className: 'is-style-fill' }
+	]]],
 ];
-
 
 class Edit extends Component {
 	constructor(props) {
 		super(props);
-
 		this.overlayRef = createRef();
 		this.state = {
 			inspectorDeviceType: 'Desktop',
@@ -1218,111 +1349,88 @@ class Edit extends Component {
 			hasBoGrid: true,
 			hoveredColumn: null,
 		};
+		console.log('Edit component initialized with props:', props);
 	}
+
 	componentDidMount() {
 		const hasGrid = detectBoGridPresence();
 		this.setState({ hasBoGrid: hasGrid });
 		this.addEditorGridClasses();
-
+		console.log('Editor component mounted with hasBoGrid:', hasGrid);
 	}
+
 	componentDidUpdate() {
 		this.addEditorGridClasses();
+		const { attributes, setAttributes, clientId } = this.props;
+
+		
+		if (!attributes.maxRowClasses) {
+			const maxRowClasses = this.getTheRowClasses();
+			setAttributes({ maxRowClasses });
+		}
+		if (!attributes.uniqueId) {
+			setAttributes({ uniqueId: clientId });
+		}
+
 	}
-	componentWillUnmount() {
+	getTheRowClasses = () => {
+		console.log('getTheRowClasses called');
+		const { attributes } = this.props;
+		const innerBlocks = select('core/block-editor').getBlock(this.props.clientId)?.innerBlocks || [];
+		const maxRowClasses = getMaxRowClassNames(innerBlocks);
+		return maxRowClasses;
 	}
 	addEditorGridClasses = () => {
 		const container = this.overlayRef.current;
 		if (!container) return;
-
-		const innerBlocksLayout = container.querySelector('.block-editor-block-list__layout');
-		if (!innerBlocksLayout) return;
-
-		['d-full', 't-full', 'm-full', 'bo-grid'].forEach((cls) => {
-			if (!innerBlocksLayout.classList.contains(cls)) {
-				innerBlocksLayout.classList.add(cls);
-			}
-		});
+		const layout = container.querySelector('.block-editor-block-list__layout');
+		if (!layout) return;
+		['d-full', 't-full', 'm-full', 'bo-grid'].forEach((cls) => layout.classList.add(cls));
 	};
-
 	canResizeBreakpoint(device) {
-		if (this.overlayRef && this.overlayRef.current) {
-			const { width } = this.overlayRef.current.getBoundingClientRect();
-
-			return width / getGridWidth(device) > MINIMUM_RESIZE_SIZE;
-		}
-
-		return false;
+		const rect = this.overlayRef.current?.getBoundingClientRect();
+		return rect && rect.width / getGridWidth(device) > MINIMUM_RESIZE_SIZE;
 	}
-
 	updateInspectorDevice(device) {
 		this.setState({ inspectorDeviceType: device });
-
-		// Only update if not on mobile
 		if (this.state.viewPort !== 'Mobile') {
 			this.props.setPreviewDeviceType(device);
 		}
 	}
-
 	getPreviewMode() {
-		// If we're rendering within a pattern preview, use the desktop layout for the preview.
-		if (this.props.isBlockOrPatternPreview) {
-			return 'Desktop';
-		}
-
-		// If we're on desktop, or the preview is set to mobile, then return the preview mode
-		if (
-			this.state.viewPort === 'Desktop' ||
-			this.props.previewDeviceType === 'Mobile'
-		) {
+		if (this.props.isBlockOrPatternPreview) return 'Desktop';
+		if (this.state.viewPort === 'Desktop' || this.props.previewDeviceType === 'Mobile') {
 			return this.props.previewDeviceType;
 		}
-
-		// Return something appropriate for the viewport (mobile or tablet)
 		return this.state.viewPort;
 	}
-
 	getInspectorMode() {
-		if (this.state.viewPort === 'Desktop') {
-			return this.props.previewDeviceType;
-		}
-
-		// Return something appropriate for the viewport (mobile or tablet)
-		return this.state.inspectorDeviceType;
+		return this.state.viewPort === 'Desktop' ? this.props.previewDeviceType : this.state.inspectorDeviceType;
 	}
-	handleGridHover = (e) => {
-		this.setState({ hoveredColumn: e.detail.col });
-	};
 	render() {
+		console.log('Render method called with props:', this.props);
 		const {
 			className,
 			attributes = {},
 			isSelected,
-			columns,
 			setAttributes,
 			updateAlignment,
-			columnAttributes,
+			clientId,
 		} = this.props;
-		const { viewPort } = this.state;
 		const previewMode = this.getPreviewMode();
 		const inspectorDeviceType = this.getInspectorMode();
+		const { verticalAlignment, backgroundType, backgroundColorSlug, backgroundGradientSlug, backgroundImage, backgroundWidth } = attributes;
 
-		const { verticalAlignment } = attributes;
-		// const layoutGrid = new LayoutGrid(attributes, previewMode, columns);
 		const classes = classnames(
-			removeColumnClasses(className, previewMode).replace(
-				'layout-grid',
-				'layout-grid-editor'
-			),
+			removeColumnClasses(className, previewMode).replace('layout-grid', 'layout-grid-editor'),
 			'wp-block-gutengrid-editor',
 			{
 				'wp-block-jetpack-layout-tablet': previewMode === 'Tablet',
 				'wp-block-jetpack-layout-desktop': previewMode === 'Desktop',
 				'wp-block-jetpack-layout-mobile': previewMode === 'Mobile',
-				'wp-block-jetpack-layout-resizable': this.canResizeBreakpoint(
-					previewMode
-				),
+				'wp-block-jetpack-layout-resizable': this.canResizeBreakpoint(previewMode),
 				[`are-vertically-aligned-${verticalAlignment}`]: verticalAlignment,
-			},
+			}
 		);
 
 
@@ -1330,85 +1438,61 @@ class Edit extends Component {
 		return (
 			<>
 				<PreviewDevice
-					currentViewport={viewPort}
-					updateViewport={(newPort) =>
-						this.setState({
-							viewPort: newPort,
-							inspectorDeviceType: newPort,
-						})
-					}
+					currentViewport={this.state.viewPort}
+					updateViewport={(newPort) => this.setState({ viewPort: newPort, inspectorDeviceType: newPort })}
 				/>
 
 				<div className={classes} ref={this.overlayRef}>
 					<GridOverlay device={previewMode} />
+					<GridBackground
+						clientId={clientId}
+						backgroundType={backgroundType || 'none'}
+						backgroundColorSlug={backgroundColorSlug || ''}
+						backgroundGradientSlug={backgroundGradientSlug || ''}
+						backgroundImage={backgroundImage || ''}
+						backgroundWidth={backgroundWidth || 'main'}
+						maxRowClasses={this.getTheRowClasses()}
+						isEditor={true}
+					/>
+
 					{!this.state.hasBoGrid && (
 						<Notice status="warning" isDismissible={false}>
 							<strong>{__('BO Grid missing', 'gutengrid')}</strong>
-							<p>
-								{__(
-									'This block requires the theme to implement a .bo-grid layout on the <main> element. Please ensure your theme supports BO Grid for correct layout behavior. A starter theme will be available soon.',
-									'gutengrid'
-								)}
-							</p>
+							<p>{__('This block requires the theme to implement a .bo-grid layout.', 'gutengrid')}</p>
 						</Notice>
 					)}
-
-					<InnerBlocks
-						template={BLOCKS_TEMPLATE}
-						templateLock={false}
-						allowedBlocks={undefined}
-					/>
+					<InnerBlocks template={BLOCKS_TEMPLATE} templateLock={false} />
 				</div>
 
 				<InspectorControls>
+					<GridBackgroundControl clientId={clientId} />
 					<PanelBody title={__('Responsive Breakpoints', 'gutengrid')}>
-						<p className="gutengrid-help">
-							{__(
-								"Previewing your post will show your browser's breakpoint, not the currently selected one.",
-								'gutengrid'
-							)}
-						</p>
 						<ButtonGroup>
 							{getLayouts().map((layout) => (
 								<Button
 									key={layout.value}
-									isPrimary={
-										layout.value === inspectorDeviceType
-									}
-									onClick={() =>
-										this.updateInspectorDevice(layout.value)
-									}
+									isPrimary={layout.value === inspectorDeviceType}
+									onClick={() => this.updateInspectorDevice(layout.value)}
 								>
 									{layout.label}
 								</Button>
 							))}
 						</ButtonGroup>
-
 					</PanelBody>
-
-
 				</InspectorControls>
 
 				<BlockControls>
-					<BlockVerticalAlignmentToolbar
-						onChange={updateAlignment}
-						value={verticalAlignment}
-					/>
+					<BlockVerticalAlignmentToolbar onChange={updateAlignment} value={verticalAlignment} />
 				</BlockControls>
 			</>
 		);
-
 	}
 }
 
 function MaybeDisabledEdit(props) {
 	return (
 		<Disabled.Consumer>
-			{(isDisabled) => {
-				return (
-					<Edit {...props} isBlockOrPatternPreview={isDisabled} />
-				);
-			}}
+			{(isDisabled) => <Edit {...props} isBlockOrPatternPreview={isDisabled} />}
 		</Disabled.Consumer>
 	);
 }
@@ -1419,6 +1503,83 @@ export default compose([
 	withPreviewDeviceType(),
 ])(MaybeDisabledEdit);
 
+ 
+
+/**************************** src/grid/grid-background.js ****************************/ 
+//  grid-background.js
+import classnames from 'classnames';
+import { __ } from '@wordpress/i18n';
+
+const GridBackground = (props) => {
+    console.log('GridBackground received props:', props);
+
+    // Destructure with default values
+    const {
+        backgroundType = 'none',
+        backgroundColorSlug = '',
+        backgroundGradientSlug = '',
+        backgroundImage = '',
+        backgroundWidth = 'main',
+        isEditor = false,
+        clientId = ''
+    } = props;
+    let { maxRowClasses } = props;
+    // Early return if no background type or it's none
+    if (!backgroundType || backgroundType === 'none') {
+        console.log('Early return with no background');
+        return null;
+    }
+
+    try {
+        if (!maxRowClasses) {
+            maxRowClasses = [];
+        }
+        // Compute background style with validation
+        let bgStyle = {};
+        if (backgroundImage && backgroundType === 'image') {
+            bgStyle = { backgroundImage: `url(${backgroundImage})` };
+        }
+
+        // Compute classes with validation
+        let bgClass = '';
+        if (backgroundType === 'color' && backgroundColorSlug) {
+            bgClass = `has-${backgroundColorSlug}-background-color`;
+        } else if (backgroundType === 'gradient' && backgroundGradientSlug) {
+            bgClass = `has-${backgroundGradientSlug}-gradient-background`;
+        }
+
+        // Compute class names safely
+        const widthClasses = backgroundWidth === 'full' ? 'd-full t-full m-full' : 'd-main t-main m-main';
+
+        const bgClasses = classnames('gutengrid-background', {
+            [widthClasses]: true,
+            [bgClass]: bgClass !== ''
+        });
+
+
+
+
+        console.log('Rendering background with:', { bgClasses, bgStyle });
+
+        // Render for editor
+        if (isEditor) {
+            console.log('Rendering background for editor');
+            return (
+                <div className="gutengrid-background__wrapper bo-grid" aria-hidden="true">
+                    <div className={bgClasses} style={bgStyle} />
+                </div>
+            );
+        }
+        console.log('Rendering background for frontend');
+        // Render for frontend
+        return <div className={bgClasses} style={bgStyle} aria-hidden="true" />;
+    } catch (err) {
+        console.error('Error in GridBackground:', err);
+        return null;
+    }
+};
+
+export default GridBackground;
  
 
 /**************************** src/grid/grid-defaults.js ****************************/ 
@@ -1653,41 +1814,44 @@ export default PreviewDevice;
  
 
 /**************************** src/grid/save.js ****************************/ 
-/**
- * External dependencies
- */
-
+// Save.js
 import classnames from 'classnames';
-
-/**
- * WordPress dependencies
- */
-
 import { InnerBlocks } from '@wordpress/block-editor';
+import { removeColumnClasses } from './css-classname';
 
-/**
- * Internal dependencies
- */
 
-import { getAsCSS, removeColumnClasses } from './css-classname';
+import GridBackground from './grid-background';
 
-const save = ({ attributes, innerBlocks }) => {
-	const device = attributes.device;
+
+const save = ({ attributes }) => {
 	const {
 		className,
+		backgroundType = 'none',
+		backgroundColorSlug = '',
+		backgroundGradientSlug = '',
+		backgroundImage = '',
+		backgroundWidth = 'main',
+		maxRowClasses,
+		uniqueId
 	} = attributes;
-	const classes = classnames(
-		removeColumnClasses(className, device),
-		'd-full',
-		't-full',
-		'm-full',
-		'bo-grid',
-	);
 
+	console.log('Save function called with attributes:', attributes);
 	return (
-		<div className={classes}>
+		// <div className={classnames(removeColumnClasses(className), 'd-full', 't-full', 'm-full', 'bo-grid')}>
+		<>
+			<GridBackground
+				clientId={uniqueId}
+				backgroundType={backgroundType || 'none'}
+				backgroundColorSlug={backgroundColorSlug || ''}
+				backgroundGradientSlug={backgroundGradientSlug || ''}
+				backgroundImage={backgroundImage || ''}
+				backgroundWidth={backgroundWidth || 'main'}
+				isEditor={false}
+				maxRowClasses={maxRowClasses}
+			/>
 			<InnerBlocks.Content />
-		</div>
+		</>
+		//</div>
 	);
 };
 
@@ -1912,6 +2076,33 @@ export function registerBlock() {
 			],
 		},
 		attributes: {
+			backgroundType: {
+				type: 'string',
+				default: 'none'
+			},
+			backgroundColorSlug: {
+				type: 'string',
+				default: ''
+			},
+			backgroundGradientSlug: {
+				type: 'string',
+				default: ''
+			},
+			backgroundImage: {
+				type: 'string',
+				default: ''
+			},
+			backgroundWidth: {
+				type: 'string',
+				default: 'main'
+			},
+			uniqueId: {
+				type: 'string'
+			},
+			maxRowClasses: {
+				type: 'object',
+				default: {}
+			}
 		},
 		edit: editGrid,
 		save: saveGrid,
@@ -2042,7 +2233,7 @@ function gutengrid_apply_wrapper_classes($block_content, $block, $instance) {
 const defaultConfig = require('@wordpress/scripts/config/webpack.config');
 const { merge } = require('webpack-merge');
 
-module.exports = merge(defaultConfig, {
+merge(defaultConfig, {
   optimization: {
     minimize: false,
   },

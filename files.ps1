@@ -6,7 +6,7 @@ Set-Content -Path $outputFile -Value ""
 
 # Doorloop alleen .php, .js en .scss bestanden, exclusief node_modules en build
 Get-ChildItem -Recurse -File -Include *.php,*.js| Where-Object {
-    $_.FullName -notmatch "\\node_modules\\" -and $_.FullName -notmatch "\\build\\"
+    $_.FullName -notmatch "\\node_modules\\" -and $_.FullName -notmatch "\\build\\" -and $_.FullName -notmatch "\\languages\\" -and $_.FullName -notmatch "\\vendor\\"
 } | ForEach-Object {
     $relativePath = $_.FullName.Replace($root.Path + "\", "").Replace("\", "/")
     Add-Content -Path $outputFile -Value "/**************************** $relativePath ****************************/ "

@@ -1,9 +1,8 @@
 import { createHigherOrderComponent } from '@wordpress/compose';
 import { useSelect, useDispatch } from '@wordpress/data';
-import { InspectorControls, BlockControls  } from '@wordpress/block-editor';
-import { PanelBody, TextControl, ButtonGroup, Button, } from '@wordpress/components';
+import { InspectorControls, BlockControls } from '@wordpress/block-editor';
+import { PanelBody, ButtonGroup, Button, } from '@wordpress/components';
 import { addFilter } from '@wordpress/hooks';
-// import {updateInspectorDevice, getInspectorMode} from '../../grid/edit.js';
 import { __ } from '@wordpress/i18n';
 import { getLayouts } from '../../constants';
 

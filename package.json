@@ -6,7 +6,7 @@
   "author": "",
   "main": "build/index.js",
   "scripts": {
-    "start": "wp-scripts start",
+    "start": "wp-scripts start  --mode=development --stats-error-details",
     "build": "wp-scripts build --stats-error-details",
     "build-dev": "wp-scripts build --webpack-config ./webpack.test.config.js --stats-error-details",
     "analyze": "wp-scripts build --analyze",
@@ -18,13 +18,13 @@
     "sass-loader": "^10.1.1",
     "webpack": "^5.38.1",
     "webpack-bundle-analyzer": "^4.10.2",
-    "webpack-cli": "^4.7.2"
+    "webpack-cli": "^4.10.0"
   },
   "dependencies": {
     "@babel/core": "^7.15.0",
     "@babel/preset-env": "^7.15.0",
     "@babel/preset-react": "^7.14.5",
-    "@wordpress/block-editor": "^14.15.0",
+    "@wordpress/block-editor": "^14.17.0",
     "@wordpress/blocks": "^14.9.0",
     "@wordpress/browserslist-config": "^6.20.0",
     "@wordpress/components": "^29.6.0",

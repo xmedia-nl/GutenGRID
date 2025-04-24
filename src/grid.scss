@@ -5,7 +5,7 @@
  */
 
 // Output editor specific styles.
-.wp-block-gutengrid-editor > .block-editor-inner-blocks > .block-editor-block-list__layout {
+.wp-block-gutengrid-editor>.block-editor-inner-blocks>.block-editor-block-list__layout {
 	// display: grid;
 	// grid-gap: 24px;
 	// grid-template-columns: $grid-desktop;
@@ -18,7 +18,7 @@
 
 	// Every block, including nested blocks, are born with an intrinsic minimum margin.
 	// This resets that for the containers, which aren't meant to have that intrinsically.
-	> .wp-block > .block-editor-block-list__block-edit > [data-block] {
+	>.wp-block>.block-editor-block-list__block-edit>[data-block] {
 		margin-top: 0;
 		margin-bottom: 0;
 	}
@@ -120,9 +120,12 @@ $dark-opacity-light-800: rgba(#425863, 0.4);
 $light-opacity-light-800: rgba(#fff, 0.45);
 
 // Show a special style of block borders for the individual columns, so they line up with the drag handle.
-[data-type="gutengrid/grid-column"].is-selected.is-selected, // This rule is for newer versions of the plugin and WordPress 5.3. Extra specificity can be removed when G2 UI lands.
-[data-type="gutengrid/grid-column"].is-selected > .block-editor-block-list__block-edit.block-editor-block-list__block-edit { // This rule is for older versions of the plugin and WordPress 5.3.
-	> .block-editor-block-contextual-toolbar > .block-editor-block-toolbar {
+[data-type="gutengrid/grid-column"].is-selected.is-selected,
+// This rule is for newer versions of the plugin and WordPress 5.3. Extra specificity can be removed when G2 UI lands.
+[data-type="gutengrid/grid-column"].is-selected>.block-editor-block-list__block-edit.block-editor-block-list__block-edit {
+
+	// This rule is for older versions of the plugin and WordPress 5.3.
+	>.block-editor-block-contextual-toolbar>.block-editor-block-toolbar {
 		left: 18px;
 	}
 
@@ -138,7 +141,7 @@ $light-opacity-light-800: rgba(#fff, 0.45);
 
 		// Use opacity to work in various editor styles
 		.is-dark-theme & {
-			border-color:  $light-opacity-light-800;
+			border-color: $light-opacity-light-800;
 			border-left: 1px dashed $light-opacity-light-800;
 		}
 	}
@@ -153,7 +156,8 @@ $light-opacity-light-800: rgba(#fff, 0.45);
 		display: none !important;
 	}
 }
-.wp-block-gutengrid__resizable{
+
+.wp-block-gutengrid__resizable {
 	position: relative;
 }
 
@@ -164,4 +168,9 @@ $light-opacity-light-800: rgba(#fff, 0.45);
 .wp-blocks-gutengrid__showright.components-resizable-box__container .components-resizable-box__handle-right,
 .wp-blocks-gutengrid__showleft.components-resizable-box__container .components-resizable-box__handle-left {
 	display: block !important;
+}
+
+.gutengrid-background {
+	grid-row: 1 / -1;
+	height: 100%;
 }

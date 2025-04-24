@@ -82,42 +82,64 @@
 	}
 }
 
-
-/**
- * Responsive Grid Options. Exclude these from the editor.
- */
-
-/* autoprefixer grid: no-autoplace */
-.wp-block-gutengrid {
-	// display: grid;
-	// grid-gap: $grid-gutter;
-	// grid-template-columns: $grid-mobile;
-
-	// // Tablet grid rules.
-	// @media (min-width: #{ ($break-small) }) {
-
-	// 	grid-template-columns: $grid-tablet;
-
-	// }
-
-
-	// Desktop grid rules.
-	// @media (min-width: #{ ($break-xlarge) }) {
-	// 	grid-template-columns: $grid-desktop;
-
-	// }
-
-	// Ensure long lines wrap in themes that don't already enforce this
-	.wp-block-gutengrid-column * {
-		word-break: break-word;
-		word-wrap: break-word;
+.wp-block-gutengrid-grid{
+	position: relative;
+	> *{
+		z-index: 1;
 	}
 
 }
-
-// Ensure inner blocks with deliberate overflows are still constrained to column.
-.wp-block-gutengrid-column {
-	max-width: 100%;
+.gutengrid-background {
+	grid-row: 1 / -1;
+	height: 100%;
+	&__wrapper{
+		width: 100%;
+		height: 100%;
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		pointer-events: none;
+		display: grid;
+		z-index: 0 !important;
+		align-content: stretch !important;
+	}
 }
 
+.d-pad-s{
+	padding: 80px 0;
+}
+.d-pad-m{
+	padding: 115px 0;
+}
+.d-pad-l{
+	padding: 155px 0;
+}
 
+// t-pad-* for tablet
+// m-pad-* for mobile
+$tablet: '1199px';
+$mobile: '767px';
+@media(max-width: $tablet) {
+	.t-pad-s{
+		padding: 40px 0;
+	}
+	.t-pad-m{
+		padding: 60px 0;
+	}
+	.t-pad-l{
+		padding: 80px 0;
+	}
+}
+@media(max-width: $mobile) {
+	.m-pad-s{
+		padding: 20px 0;
+	}
+	.m-pad-m{
+		padding: 30px 0;
+	}
+	.m-pad-l{
+		padding: 40px 0;
+	}
+}
