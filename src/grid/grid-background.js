@@ -3,7 +3,6 @@ import classnames from 'classnames';
 import { __ } from '@wordpress/i18n';
 
 const GridBackground = (props) => {
-    console.log('GridBackground received props:', props);
 
     // Destructure with default values
     const {
@@ -18,7 +17,6 @@ const GridBackground = (props) => {
     let { maxRowClasses } = props;
     // Early return if no background type or it's none
     if (!backgroundType || backgroundType === 'none') {
-        console.log('Early return with no background');
         return null;
     }
 
@@ -48,12 +46,6 @@ const GridBackground = (props) => {
             [bgClass]: bgClass !== ''
         });
 
-
-
-
-        console.log('Rendering background with:', { bgClasses, bgStyle });
-
-        console.log('Rendering background for editor');
         return (
             <div className="gutengrid-background__wrapper d-full t-full m-full bo-grid" aria-hidden="true">
                 <div className={bgClasses} style={bgStyle} />

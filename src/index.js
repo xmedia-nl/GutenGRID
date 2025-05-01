@@ -159,7 +159,7 @@ export function registerBlock() {
 				type: 'object',
 				default: {}
 			},
-			padding: {
+			gridPadding: {
 				type: 'object',
 				default: {} // bijvoorbeeld: { desktop: 's', tablet: 'm', mobile: 'c-60' }
 			}

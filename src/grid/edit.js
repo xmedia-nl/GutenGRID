@@ -63,14 +63,12 @@ class Edit extends Component {
 			hasBoGrid: true,
 			hoveredColumn: null,
 		};
-		console.log('Edit component initialized with props:', props);
 	}
 
 	componentDidMount() {
 		const hasGrid = detectBoGridPresence();
 		this.setState({ hasBoGrid: hasGrid });
 		this.addEditorGridClasses();
-		console.log('Editor component mounted with hasBoGrid:', hasGrid);
 	}
 
 	componentDidUpdate() {
@@ -88,7 +86,6 @@ class Edit extends Component {
 
 	}
 	getTheRowClasses = () => {
-		console.log('getTheRowClasses called');
 		const { attributes } = this.props;
 		const innerBlocks = select('core/block-editor').getBlock(this.props.clientId)?.innerBlocks || [];
 		const maxRowClasses = getMaxRowClassNames(innerBlocks);
@@ -122,7 +119,6 @@ class Edit extends Component {
 		return this.state.viewPort === 'Desktop' ? this.props.previewDeviceType : this.state.inspectorDeviceType;
 	}
 	render() {
-		console.log('Render method called with props:', this.props);
 		const {
 			className,
 			attributes = {},
@@ -140,19 +136,19 @@ class Edit extends Component {
 			backgroundGradientSlug,
 			backgroundImage,
 			backgroundWidth,
-			padding = {},
+			gridPadding = {},
 		} = attributes;
 		const paddingClass =
-			(previewMode === 'Mobile' && padding.mobile) ||
-			(previewMode === 'Tablet' && padding.tablet) ||
-			padding.desktop || '';
+			(previewMode === 'Mobile' && gridPadding.mobile) ||
+			(previewMode === 'Tablet' && gridPadding.tablet) ||
+			gridPadding.desktop || '';
 
 		let inlineStyle = {};
 
 		const currentPadValue =
-			(previewMode === 'Mobile' && padding.mobile) ||
-			(previewMode === 'Tablet' && padding.tablet) ||
-			padding.desktop || '';
+			(previewMode === 'Mobile' && gridPadding.mobile) ||
+			(previewMode === 'Tablet' && gridPadding.tablet) ||
+			gridPadding.desktop || '';
 
 		if (currentPadValue?.startsWith('c-')) {
 			const px = parseInt(currentPadValue.replace('c-', ''), 10);
@@ -175,9 +171,9 @@ class Edit extends Component {
 				[`are-vertically-aligned-${verticalAlignment}`]: verticalAlignment,
 			},
 			{
-				[`d-pad-${padding.desktop}`]: previewMode === 'Desktop' && padding.desktop && !padding.desktop.startsWith('c-'),
-				[`t-pad-${padding.tablet}`]: previewMode === 'Tablet' && padding.tablet && !padding.tablet.startsWith('c-'),
-				[`m-pad-${padding.mobile}`]: previewMode === 'Mobile' && padding.mobile && !padding.mobile.startsWith('c-'),
+				[`d-pad-vert-${gridPadding.desktop}`]: previewMode === 'Desktop' && gridPadding.desktop && !gridPadding.desktop.startsWith('c-'),
+				[`t-pad-vert-${gridPadding.tablet}`]: previewMode === 'Tablet' && gridPadding.tablet && !gridPadding.tablet.startsWith('c-'),
+				[`m-pad-vert-${gridPadding.mobile}`]: previewMode === 'Mobile' && gridPadding.mobile && !gridPadding.mobile.startsWith('c-'),
 			}
 		);
 

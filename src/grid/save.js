@@ -28,16 +28,15 @@ const save = ({ attributes }) => {
 		backgroundWidth = 'main',
 		maxRowClasses,
 		uniqueId,
-		padding = {},
+		gridPadding = {},
 	} = attributes;
 
-	console.log('Save attributes:', attributes);
 	const paddingClasses = [];
-	if (padding.desktop && !padding.desktop.startsWith('c-')) paddingClasses.push(`d-pad-${padding.desktop}`);
-	if (padding.tablet && !padding.tablet.startsWith('c-')) paddingClasses.push(`t-pad-${padding.tablet}`);
-	if (padding.mobile && !padding.mobile.startsWith('c-')) paddingClasses.push(`m-pad-${padding.mobile}`);
+	if (gridPadding.desktop && !gridPadding.desktop.startsWith('c-')) paddingClasses.push(`d-pad-vert-${gridPadding.desktop}`);
+	if (gridPadding.tablet && !gridPadding.tablet.startsWith('c-')) paddingClasses.push(`t-pad-vert-${gridPadding.tablet}`);
+	if (gridPadding.mobile && !gridPadding.mobile.startsWith('c-')) paddingClasses.push(`m-pad-vert-${gridPadding.mobile}`);
 
-	const allCustomPaddings = getAllCustomPaddings(padding);
+	const allCustomPaddings = getAllCustomPaddings(gridPadding);
 
 	const customPadding = allCustomPaddings.find(Boolean); // pick the first custom padding for inline styles (fallback)
 

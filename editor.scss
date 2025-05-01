@@ -313,3 +313,15 @@
 		align-content: stretch !important;
 	}
 }
+.wp-block-gutengrid-grid{
+	>.block-editor-inner-blocks{
+		>.block-editor-block-list__layout{
+			>.wp-block-gutengrid__resizable{
+				height: 100%;
+				.wp-block-group{
+					height: 100%;
+				}
+			}
+		}
+	}
+}

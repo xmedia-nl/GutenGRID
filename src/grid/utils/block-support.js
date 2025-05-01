@@ -15,11 +15,9 @@ export function getMaxRowClassNames(innerBlocks) {
 	const max = { d: 1, t: 1, m: 1 };
 
 	innerBlocks.forEach((block) => {
-		console.log('Row check for block:', block);
 		const className = block.attributes?.className || '';
 		['Desktop', 'Tablet', 'Mobile'].forEach((device) => {
 			let { start, end } = getStartEndRowFromClassName(className, device);
-			console.log('Start and end:', device, start, end);
 
 			// start might not be set if the block is locked in one row (eg. d-row-2 instead of from-to like d-row-2-3)
 			// if end is not set, we assume it is the same as start

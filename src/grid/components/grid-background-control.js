@@ -61,7 +61,6 @@ const GridBackgroundControl = ({ clientId }) => {
                 onChange={(val) => {
                     // Reset related properties when changing type
                     const updates = { backgroundType: val };
-                    console.log('Background type changed:', val);
                     if (val === 'color') {
                         updates.backgroundGradientSlug = '';
                         updates.backgroundImage = '';
@@ -78,7 +77,6 @@ const GridBackgroundControl = ({ clientId }) => {
                     }
 
                     updateBlockAttributes(clientId, updates);
-                    console.log('Updated attributes:', updates);
                 }}
             />
 

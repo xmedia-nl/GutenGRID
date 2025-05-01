@@ -8,6 +8,7 @@ import { getLayouts } from '../../constants';
 
 import LayoutPresetToolbar from '../components/layout-preset-toolbar';
 import GridPositionControl from '../components/grid-position-control';
+import GridSelfAlignControl from '../components/grid-self-align-control';
 
 const withGridPositionControl = createHigherOrderComponent((BlockEdit) => (props) => {
     const { clientId, name, isSelected } = props;
@@ -58,6 +59,9 @@ const withGridPositionControl = createHigherOrderComponent((BlockEdit) => (props
                         ))}
                     </ButtonGroup>
 
+                </PanelBody>
+                <PanelBody title={__("Grid alignment", 'gutengrid')} initialOpen={false}>
+                    <GridSelfAlignControl clientId={clientId} />
                 </PanelBody>
                 <PanelBody title={__("Grid position", 'gutengrid')}>
                     <GridPositionControl clientId={clientId} />

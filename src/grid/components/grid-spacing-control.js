@@ -10,7 +10,7 @@ import { useSelect, useDispatch } from '@wordpress/data';
 
 const GridSpacingControl = ({ clientId, currentViewport = 'Desktop' }) => {
     const {
-        padding = {},
+        gridPadding = {},
     } = useSelect(
         (select) => select('core/block-editor').getBlockAttributes(clientId),
         [clientId]
@@ -18,15 +18,15 @@ const GridSpacingControl = ({ clientId, currentViewport = 'Desktop' }) => {
 
     const { updateBlockAttributes } = useDispatch('core/block-editor');
 
-    const currentPadding = padding[currentViewport.toLowerCase()] ||
-        padding[(currentViewport === 'Mobile' && 'tablet')] ||
-        padding[(currentViewport === 'Mobile' || currentViewport === 'Tablet') && 'desktop'] ||
+    const currentPadding = gridPadding[currentViewport.toLowerCase()] ||
+        gridPadding[(currentViewport === 'Mobile' && 'tablet')] ||
+        gridPadding[(currentViewport === 'Mobile' || currentViewport === 'Tablet') && 'desktop'] ||
         '';
 
     const setCurrentPadding = (value) => {
         updateBlockAttributes(clientId, {
-            padding: {
-                ...padding,
+            gridPadding: {
+                ...gridPadding,
                 [currentViewport.toLowerCase()]: value,
             },
         });
