@@ -24,170 +24,236 @@
  * @handle gutengrid-editor-script
  */
 
-
 /**
  * WordPress dependencies
  */
 
-import { registerBlockType } from '@wordpress/blocks';
-import { __ } from '@wordpress/i18n';
+import { registerBlockType } from "@wordpress/blocks";
+import { __ } from "@wordpress/i18n";
 // import metadata from './block.json';
-import '../style.scss';
-import '../editor.scss';
+import "../style.scss";
+import "../editor.scss";
 
 /**
  * Internal dependencies
  */
-import './grid/filters/withGridResizeHandles';
-import './grid/filters/withGridPositionControl';
+import "./grid/filters/withGridResizeHandles";
+import "./grid/filters/withGridPositionControl";
 
 // import './grid/filters/withGridAlignControls'; // need to rethink this. Blocks that support alignment usually have this already.
 
-import editGrid from './grid/edit';
-import saveGrid from './grid/save';
-import { GridIcon } from './icons';
+import editGrid from "./grid/edit";
+import saveGrid from "./grid/save";
+import { GridIcon } from "./icons";
 
-const unsupportedBlocks = [
-	'gravityforms/form',
-];
+const unsupportedBlocks = ["gravityforms/form"];
 
 export function registerBlock() {
-	registerBlockType('gutengrid/grid', {
-		title: __('Layout Grid', 'gutengrid'),
-		description: __(
-			'Align blocks to a global grid, with support for responsive breakpoints.',
-			'gutengrid'
-		),
-		icon: GridIcon,
-		category: 'layout',
-		supports: {
-			align: ['full'],
-			html: false,
-		},
-		keywords: ['grid', 'layout', '_structure'],
-		example: {
-			attributes: {
-				className: 'has-preview-style',
-			},
-			innerBlocks: [
-				...Array.from({ length: 14 }).map((_, i) => {
-					const index = i + 1;
-					const isEdge = index === 1 || index === 14;
-					const background = isEdge ? '#000' : '#B9E5FB';
-					return {
-						name: 'core/group',
-						attributes: {
-							className: `preview-col d-row-1-3 t-row-1-3 m-row-1-3 d-grid-${index}-${index} t-grid-${index}-${index} m-grid-${index}-${index} `,
-							style: {
-								color: { background },
-								layout: { display: 'block' },
-								dimensions: { minHeight: '120px', height: '100%' },
-							},
-						},
-					};
-				}),
-				{
-					name: 'core/paragraph',
-					attributes: {
-						content: '<strong>Snow Patrol</strong>',
-						align: 'center',
-						style: {
-							typography: {
-								fontSize: 48,
-							},
-						},
-						className: 'd-row-1-2 t-row-1-2 d-grid-2-6 t-grid-2-6 m-grid-2-5 preview-handles',
-					},
-				},
-				{
-					name: 'core/paragraph',
-					attributes: {
-						content:
-							'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-						align: 'left',
-						className: 'd-row-1-4 t-row-1-4 d-grid-7-14 t-grid-7-14 m-grid-5-10 preview-handles',
-						style: {
-							dimensions: {
-								height: '100%'
-							},
-							layout: { display: 'block' },
-						},
-					},
-				},
-				{
-					name: 'core/buttons',
-					innerBlocks: [
-						{
-							name: 'core/button',
-							attributes: {
-								text: 'Meer informatie',
-								className: 'is-style-fill',
-							},
-						},
-					],
-					attributes: {
-						className: 'd-row-2-3 t-row-2-3 d-grid-3-6 t-grid-3-6 m-grid-3-5 preview-handles',
-					},
-				},
-			],
-		},
-		attributes: {
-			backgroundType: {
-				type: 'string',
-				default: 'none'
-			},
-			backgroundColorSlug: {
-				type: 'string',
-				default: ''
-			},
-			backgroundGradientSlug: {
-				type: 'string',
-				default: ''
-			},
-			backgroundImage: {
-				type: 'string',
-				default: ''
-			},
-			backgroundWidth: {
-				type: 'string',
-				default: 'main'
-			},
-			uniqueId: {
-				type: 'string'
-			},
-			maxRowClasses: {
-				type: 'object',
-				default: {}
-			},
-			gridPadding: {
-				type: 'object',
-				default: {} // bijvoorbeeld: { desktop: 's', tablet: 'm', mobile: 'c-60' }
-			}
-		},
-		edit: editGrid,
-		save: saveGrid,
-	});
-
+  registerBlockType("gutengrid/grid", {
+    title: __("Layout Grid", "gutengrid"),
+    description: __(
+      "Align blocks to a global grid, with support for responsive breakpoints.",
+      "gutengrid"
+    ),
+    icon: GridIcon,
+    category: "layout",
+    supports: {
+      align: ["full"],
+      html: false,
+    },
+    keywords: ["grid", "layout", "_structure"],
+    example: {
+      attributes: {
+        className: "has-preview-style",
+      },
+      innerBlocks: [
+        ...Array.from({ length: 14 }).map((_, i) => {
+          const index = i + 1;
+          const isEdge = index === 1 || index === 14;
+          const background = isEdge ? "#000" : "#B9E5FB";
+          return {
+            name: "core/group",
+            attributes: {
+              className: `preview-col d-row-1-3 t-row-1-3 m-row-1-3 d-grid-${index}-${index} t-grid-${index}-${index} m-grid-${index}-${index} `,
+              style: {
+                color: { background },
+                layout: { display: "block" },
+                dimensions: { minHeight: "120px", height: "100%" },
+              },
+            },
+          };
+        }),
+        {
+          name: "core/paragraph",
+          attributes: {
+            content: "<strong>Snow Patrol</strong>",
+            align: "center",
+            style: {
+              typography: {
+                fontSize: 48,
+              },
+            },
+            className:
+              "d-row-1-2 t-row-1-2 d-grid-2-6 t-grid-2-6 m-grid-2-5 preview-handles",
+          },
+        },
+        {
+          name: "core/paragraph",
+          attributes: {
+            content:
+              "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+            align: "left",
+            className:
+              "d-row-1-4 t-row-1-4 d-grid-7-14 t-grid-7-14 m-grid-5-10 preview-handles",
+            style: {
+              dimensions: {
+                height: "100%",
+              },
+              layout: { display: "block" },
+            },
+          },
+        },
+        {
+          name: "core/buttons",
+          innerBlocks: [
+            {
+              name: "core/button",
+              attributes: {
+                text: "Meer informatie",
+                className: "is-style-fill",
+              },
+            },
+          ],
+          attributes: {
+            className:
+              "d-row-2-3 t-row-2-3 d-grid-3-6 t-grid-3-6 m-grid-3-5 preview-handles",
+          },
+        },
+      ],
+    },
+    attributes: {
+      backgroundType: {
+        type: "string",
+        default: "none",
+      },
+      backgroundColorSlug: {
+        type: "string",
+        default: "",
+      },
+      backgroundGradientSlug: {
+        type: "string",
+        default: "",
+      },
+      backgroundImage: {
+        type: "string",
+        default: "",
+      },
+      backgroundWidth: {
+        type: "string",
+        default: "main",
+      },
+      backgroundRepeat: { 
+        type: "string", 
+        default: "no" 
+      },
+      backgroundSize: { 
+        type: "string", 
+        default: "cover" 
+      },
+      backgroundSizeX: { 
+        type: "string", 
+        default: "100%" 
+      },
+      backgroundSizeY: { 
+        type: "string", 
+        default: "100%" 
+      },
+      backgroundPosition: { 
+        type: "string", 
+        default: "center" 
+      },
+      backgroundPositionX: { 
+        type: "string", 
+        default: "50%" 
+      },
+      backgroundPositionY: { 
+        type: "string", 
+        default: "50%" 
+      },
+      backgroundAdvancedOpen: { 
+        type: "boolean", 
+        default: false 
+      },
+      // Responsive background attributes
+      dBackgroundType: { type: "string", default: "" },
+      dBackgroundColorSlug: { type: "string", default: "" },
+      dBackgroundGradientSlug: { type: "string", default: "" },
+      dBackgroundImage: { type: "string", default: "" },
+      dBackgroundRepeat: { type: "string", default: "" },
+      dBackgroundSize: { type: "string", default: "" },
+      dBackgroundSizeX: { type: "string", default: "" },
+      dBackgroundSizeY: { type: "string", default: "" },
+      dBackgroundPosition: { type: "string", default: "" },
+      dBackgroundPositionX: { type: "string", default: "" },
+      dBackgroundPositionY: { type: "string", default: "" },
+      tBackgroundType: { type: "string", default: "" },
+      tBackgroundColorSlug: { type: "string", default: "" },
+      tBackgroundGradientSlug: { type: "string", default: "" },
+      tBackgroundImage: { type: "string", default: "" },
+      tBackgroundRepeat: { type: "string", default: "" },
+      tBackgroundSize: { type: "string", default: "" },
+      tBackgroundSizeX: { type: "string", default: "" },
+      tBackgroundSizeY: { type: "string", default: "" },
+      tBackgroundPosition: { type: "string", default: "" },
+      tBackgroundPositionX: { type: "string", default: "" },
+      tBackgroundPositionY: { type: "string", default: "" },
+      mBackgroundType: { type: "string", default: "" },
+      mBackgroundColorSlug: { type: "string", default: "" },
+      mBackgroundGradientSlug: { type: "string", default: "" },
+      mBackgroundImage: { type: "string", default: "" },
+      mBackgroundRepeat: { type: "string", default: "" },
+      mBackgroundSize: { type: "string", default: "" },
+      mBackgroundSizeX: { type: "string", default: "" },
+      mBackgroundSizeY: { type: "string", default: "" },
+      mBackgroundPosition: { type: "string", default: "" },
+      mBackgroundPositionX: { type: "string", default: "" },
+      mBackgroundPositionY: { type: "string", default: "" },
+      uniqueId: {
+        type: "string",
+      },
+      maxRowClasses: {
+        type: "object",
+        default: {},
+      },
+      gridPadding: {
+        type: "object",
+        default: {}, // bijvoorbeeld: { desktop: 's', tablet: 'm', mobile: 'c-60' }
+      },
+    },
+    edit: editGrid,
+    save: saveGrid,
+  });
 }
 registerBlock();
 
-
 // Adding wrapperClass for blocks that don't support className
 wp.hooks.addFilter(
-	'blocks.registerBlockType',
-	'vwe/add-wrapper-classname-attribute',
-	(settings, name) => {
+  "blocks.registerBlockType",
+  "vwe/add-wrapper-classname-attribute",
+  (settings, name) => {
+    if (
+      settings.supports?.className !== false ||
+      unsupportedBlocks.includes(name)
+    ) {
+      return settings;
+    }
 
-		if (settings.supports?.className !== false || unsupportedBlocks.includes(name)) {
-			return settings;
-		}
-
-		settings.attributes = {
-			...settings.attributes,
-			wrapperClassname: {
-				type: 'string',
-			},
-		};
-		return settings;
-	}
+    settings.attributes = {
+      ...settings.attributes,
+      wrapperClassname: {
+        type: "string",
+      },
+    };
+    return settings;
+  }
 );

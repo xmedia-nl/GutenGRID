@@ -42,8 +42,6 @@ import {
 	withPreviewDeviceType,
 } from './higher-order';
 
-
-
 const MINIMUM_RESIZE_SIZE = 50;
 const BLOCKS_TEMPLATE = [
 	['core/heading', { content: 'Lorum Ipsum', className: 'd-row-1 d-grid-2-6 t-grid-2-6 m-grid-2-5' }],
@@ -75,7 +73,6 @@ class Edit extends Component {
 		this.addEditorGridClasses();
 		const { attributes, setAttributes, clientId } = this.props;
 
-
 		if (!attributes.maxRowClasses) {
 			const maxRowClasses = this.getTheRowClasses();
 			setAttributes({ maxRowClasses });
@@ -83,14 +80,15 @@ class Edit extends Component {
 		if (!attributes.uniqueId) {
 			setAttributes({ uniqueId: clientId });
 		}
-
 	}
+
 	getTheRowClasses = () => {
 		const { attributes } = this.props;
 		const innerBlocks = select('core/block-editor').getBlock(this.props.clientId)?.innerBlocks || [];
 		const maxRowClasses = getMaxRowClassNames(innerBlocks);
 		return maxRowClasses;
 	}
+
 	addEditorGridClasses = () => {
 		const container = this.overlayRef.current;
 		if (!container) return;
@@ -98,16 +96,19 @@ class Edit extends Component {
 		if (!layout) return;
 		['d-full', 't-full', 'm-full', 'bo-grid'].forEach((cls) => layout.classList.add(cls));
 	};
+
 	canResizeBreakpoint(device) {
 		const rect = this.overlayRef.current?.getBoundingClientRect();
 		return rect && rect.width / getGridWidth(device) > MINIMUM_RESIZE_SIZE;
 	}
+
 	updateInspectorDevice(device) {
 		this.setState({ inspectorDeviceType: device });
 		if (this.state.viewPort !== 'Mobile') {
 			this.props.setPreviewDeviceType(device);
 		}
 	}
+
 	getPreviewMode() {
 		if (this.props.isBlockOrPatternPreview) return 'Desktop';
 		if (this.state.viewPort === 'Desktop' || this.props.previewDeviceType === 'Mobile') {
@@ -115,10 +116,17 @@ class Edit extends Component {
 		}
 		return this.state.viewPort;
 	}
+
 	getInspectorMode() {
 		return this.state.viewPort === 'Desktop' ? this.props.previewDeviceType : this.state.inspectorDeviceType;
 	}
+
 	render() {
+		const postType = select('core/editor').getCurrentPostType?.();
+		if (postType === 'product') {
+			return <BlockEdit {...props} />; // niets injecteren
+		}
+
 		const {
 			className,
 			attributes = {},
@@ -129,15 +137,40 @@ class Edit extends Component {
 		} = this.props;
 		const previewMode = this.getPreviewMode();
 		const inspectorDeviceType = this.getInspectorMode();
+
+		// Helper function to get responsive background values
+		const getResponsiveBackgroundValue = (attribute) => {
+			let devicePrefix = '';
+			switch (previewMode) {
+				case 'Desktop': devicePrefix = 'd'; break;
+				case 'Tablet': devicePrefix = 't'; break;
+				case 'Mobile': devicePrefix = 'm'; break;
+			}
+
+			const deviceValue = attributes[`${devicePrefix}${attribute.charAt(0).toUpperCase()}${attribute.slice(1)}`];
+			const baseValue = attributes[attribute];
+			return deviceValue !== '' && deviceValue !== undefined ? deviceValue : baseValue;
+		};
+
 		const {
 			verticalAlignment,
-			backgroundType,
-			backgroundColorSlug,
-			backgroundGradientSlug,
-			backgroundImage,
-			backgroundWidth,
 			gridPadding = {},
 		} = attributes;
+
+		// Get responsive background values for current preview mode
+		const backgroundType = getResponsiveBackgroundValue('backgroundType');
+		const backgroundColorSlug = getResponsiveBackgroundValue('backgroundColorSlug');
+		const backgroundGradientSlug = getResponsiveBackgroundValue('backgroundGradientSlug');
+		const backgroundImage = getResponsiveBackgroundValue('backgroundImage');
+		const backgroundWidth = getResponsiveBackgroundValue('backgroundWidth');
+		const backgroundRepeat = getResponsiveBackgroundValue('backgroundRepeat');
+		const backgroundSize = getResponsiveBackgroundValue('backgroundSize');
+		const backgroundSizeX = getResponsiveBackgroundValue('backgroundSizeX');
+		const backgroundSizeY = getResponsiveBackgroundValue('backgroundSizeY');
+		const backgroundPosition = getResponsiveBackgroundValue('backgroundPosition');
+		const backgroundPositionX = getResponsiveBackgroundValue('backgroundPositionX');
+		const backgroundPositionY = getResponsiveBackgroundValue('backgroundPositionY');
+
 		const paddingClass =
 			(previewMode === 'Mobile' && gridPadding.mobile) ||
 			(previewMode === 'Tablet' && gridPadding.tablet) ||
@@ -177,8 +210,6 @@ class Edit extends Component {
 			}
 		);
 
-
-
 		return (
 			<>
 				<PreviewDevice
@@ -195,6 +226,13 @@ class Edit extends Component {
 						backgroundGradientSlug={backgroundGradientSlug || ''}
 						backgroundImage={backgroundImage || ''}
 						backgroundWidth={backgroundWidth || 'main'}
+						backgroundRepeat={backgroundRepeat || 'no'}
+						backgroundSize={backgroundSize || 'cover'}
+						backgroundSizeX={backgroundSizeX || '100%'}
+						backgroundSizeY={backgroundSizeY || '100%'}
+						backgroundPosition={backgroundPosition || 'center'}
+						backgroundPositionX={backgroundPositionX || '50'}
+						backgroundPositionY={backgroundPositionY || '50'}
 						maxRowClasses={this.getTheRowClasses()}
 						isEditor={true}
 					/>
@@ -209,7 +247,7 @@ class Edit extends Component {
 				</div>
 
 				<InspectorControls>
-					<GridBackgroundControl clientId={clientId} />
+					<GridBackgroundControl clientId={clientId} currentViewport={inspectorDeviceType} />
 					<GridSpacingControl
 						clientId={clientId}
 						currentViewport={previewMode}

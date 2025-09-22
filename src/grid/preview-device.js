@@ -35,8 +35,8 @@ function getCurrentViewport( isMobile, isTablet ) {
 function PreviewDevice( props ) {
 	const { viewPort, updateViewport } = props;
 	const {
-		__experimentalSetPreviewDeviceType: setPreviewDevice,
-	} = useDispatch( 'core/edit-post' ) || useDispatch( 'core/edit-site' );
+		__experimentalSetPreviewDeviceType: setPreviewDeviceType,
+	  } = wp.data.dispatch( 'core/edit-post' ) ?? {};   // returns {}
 	const previewDevice = useSelect(
 		( select ) =>
 			( select( 'core/edit-site' ) || select( 'core/edit-post' ) ).__experimentalGetPreviewDeviceType(),

@@ -11,7 +11,8 @@
     "build-dev": "wp-scripts build --webpack-config ./webpack.test.config.js --stats-error-details",
     "analyze": "wp-scripts build --analyze",
     "make-pot": "wp i18n make-pot . languages/gutengrid.pot",
-    "make-json": "wp i18n make-json languages"
+    "make-json": "wp i18n make-json languages",
+    "plugin-zip": "wp-scripts plugin-zip"
   },
   "devDependencies": {
     "css-loader": "^7.1.2",

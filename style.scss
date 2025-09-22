@@ -82,20 +82,24 @@
 	}
 }
 
-.wp-block-gutengrid-grid{
+.wp-block-gutengrid-grid {
 	position: relative;
-	> *{
+
+	>* {
 		z-index: 1;
 	}
-	> .wp-block-group{
+
+	>.wp-block-group {
 		height: 100%;
 	}
 
 }
+
 .gutengrid-background {
 	grid-row: 1 / -1;
 	height: 100%;
-	&__wrapper{
+
+	&__wrapper {
 		width: 100%;
 		height: 100%;
 		position: absolute;
@@ -110,121 +114,170 @@
 	}
 }
 
-.d-pad-vert-s{
-	padding: 80px 0;
-}
-.d-pad-vert-m{
-	padding: 115px 0;
-}
-.d-pad-vert-l{
-	padding: 155px 0;
-}
-
 // t-pad-* for tablet
 // m-pad-* for mobile
 $tablet: '1199px';
 $mobile: '767px';
-@media(max-width: $tablet) {
-	.t-pad-s{
+
+.d-pad-vert-s {
+	padding: 80px 0;
+	@media(max-width: $tablet) {
 		padding: 40px 0;
 	}
-	.t-pad-m{
-		padding: 60px 0;
-	}
-	.t-pad-l{
-		padding: 80px 0;
-	}
-}
-@media(max-width: $mobile) {
-	.m-pad-s{
+	@media(max-width: $mobile) {
 		padding: 20px 0;
 	}
-	.m-pad-m{
+}
+
+.d-pad-vert-m {
+	padding: 115px 0;
+	@media(max-width: $tablet) {
+		padding: 60px 0;
+	}
+	@media(max-width: $mobile) {
 		padding: 30px 0;
 	}
-	.m-pad-l{
+}
+
+.d-pad-vert-l {
+	padding: 155px 0;
+	@media(max-width: $tablet) {
+		padding: 80px 0;
+	}
+	@media(max-width: $mobile) {
 		padding: 40px 0;
 	}
 }
 
-.d-self-align-center{
+
+@media(max-width: $tablet) {
+	.t-pad-s {
+		padding: 40px 0 !important;
+	}
+
+	.t-pad-m {
+		padding: 60px 0 !important;
+	}
+
+	.t-pad-l {
+		padding: 80px 0 !important;
+	}
+}
+
+@media(max-width: $mobile) {
+	.m-pad-s {
+		padding: 20px 0 !important;
+	}
+
+	.m-pad-m {
+		padding: 30px 0 !important;
+	}
+
+	.m-pad-l {
+		padding: 40px 0 !important;
+	}
+}
+
+.d-self-align-center {
 	align-self: center;
 }
-.d-self-align-start{
+
+.d-self-align-start {
 	align-self: flex-start;
 }
-.d-self-align-end{
+
+.d-self-align-end {
 	align-self: flex-end;
 }
-.d-self-align-stretch{
+
+.d-self-align-stretch {
 	align-self: stretch;
 }
+
 @media(max-width: $tablet) {
-	.t-self-align-center{
+	.t-self-align-center {
 		align-self: center;
 	}
-	.t-self-align-start{
+
+	.t-self-align-start {
 		align-self: flex-start;
 	}
-	.t-self-align-end{
+
+	.t-self-align-end {
 		align-self: flex-end;
 	}
-	.t-self-align-stretch{
-		align-self: stretch;
-	}
-}
-@media(max-width: $mobile) {
-	.m-self-align-center{
-		align-self: center;
-	}
-	.m-self-align-start{
-		align-self: flex-start;
-	}
-	.m-self-align-end{
-		align-self: flex-end;
-	}
-	.m-self-align-stretch{
+
+	.t-self-align-stretch {
 		align-self: stretch;
 	}
 }
 
-.d-self-justify-center{
+@media(max-width: $mobile) {
+	.m-self-align-center {
+		align-self: center;
+	}
+
+	.m-self-align-start {
+		align-self: flex-start;
+	}
+
+	.m-self-align-end {
+		align-self: flex-end;
+	}
+
+	.m-self-align-stretch {
+		align-self: stretch;
+	}
+}
+
+.d-self-justify-center {
 	justify-self: center;
 }
-.d-self-justify-start{
+
+.d-self-justify-start {
 	justify-self: flex-start;
 }
-.d-self-justify-end{
+
+.d-self-justify-end {
 	justify-self: flex-end;
 }
-.d-self-justify-stretch{
+
+.d-self-justify-stretch {
 	justify-self: stretch;
 }
+
 @media(max-width: $tablet) {
-	.t-self-justify-center{
+	.t-self-justify-center {
 		justify-self: center;
 	}
-	.t-self-justify-start{
+
+	.t-self-justify-start {
 		justify-self: flex-start;
 	}
-	.t-self-justify-end{
+
+	.t-self-justify-end {
 		justify-self: flex-end;
 	}
-	.t-self-justify-stretch{
+
+	.t-self-justify-stretch {
 		justify-self: stretch;
 	}
 }
+
 @media(max-width: $mobile) {
-	.m-self-justify-center{
+	.m-self-justify-center {
 		justify-self: center;
 	}
-	.m-self-justify-start{
+
+	.m-self-justify-start {
 		justify-self: flex-start;
 	}
-	.m-self-justify-end{
+
+	.m-self-justify-end {
 		justify-self: flex-end;
 	}
-	.m-self-justify-stretch{
+
+	.m-self-justify-stretch {
 		justify-self: stretch;
 	}
 }

@@ -1,5 +1,5 @@
 import { createHigherOrderComponent } from '@wordpress/compose';
-import { useSelect, useDispatch } from '@wordpress/data';
+import { useSelect, useDispatch, select } from '@wordpress/data';
 import { InspectorControls, BlockControls } from '@wordpress/block-editor';
 import { PanelBody, ButtonGroup, Button, } from '@wordpress/components';
 import { addFilter } from '@wordpress/hooks';
@@ -11,6 +11,7 @@ import GridPositionControl from '../components/grid-position-control';
 import GridSelfAlignControl from '../components/grid-self-align-control';
 
 const withGridPositionControl = createHigherOrderComponent((BlockEdit) => (props) => {
+
     const { clientId, name, isSelected } = props;
 
     const parentIsGrid = useSelect((select) => {
@@ -27,9 +28,11 @@ const withGridPositionControl = createHigherOrderComponent((BlockEdit) => (props
         );
     }, []);
 
-    const { __experimentalSetPreviewDeviceType: setDevice } =
-        useDispatch('core/edit-site') || useDispatch('core/edit-post');
-
+    // const { __experimentalSetPreviewDeviceType: setDevice } =
+    //     useDispatch('core/edit-site') || useDispatch('core/edit-post');
+    const {
+        __experimentalSetPreviewDeviceType: setPreviewDeviceType,
+        } = wp.data.dispatch( 'core/edit-post' ) ?? {};   // returns {}
 
     if (!isSelected || !parentIsGrid) return <BlockEdit {...props} />;
 

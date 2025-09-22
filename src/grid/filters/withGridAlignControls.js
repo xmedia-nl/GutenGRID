@@ -3,9 +3,14 @@ import { useSelect } from '@wordpress/data';
 import { InspectorControls, BlockControls } from '@wordpress/block-editor';
 import { addFilter } from '@wordpress/hooks';
 
+import { select } from '@wordpress/data';
 import GridAlignControl from '../components/grid-align-control';
 
 const withGridAlignControls = createHigherOrderComponent((BlockEdit) => (props) => {
+	const postType = select('core/editor').getCurrentPostType?.();
+	if (postType === 'product') {
+		return <BlockEdit {...props} />; // niets injecteren
+	}
 	const { clientId, name, isSelected } = props;
 
 	// Check of dit een child is van een gutengrid/grid

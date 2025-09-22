@@ -21,15 +21,47 @@ const getAllCustomPaddings = (padding) => {
 const save = ({ attributes }) => {
 	const {
 		className,
-		backgroundType = 'none',
-		backgroundColorSlug = '',
-		backgroundGradientSlug = '',
-		backgroundImage = '',
-		backgroundWidth = 'main',
 		maxRowClasses,
 		uniqueId,
 		gridPadding = {},
 	} = attributes;
+
+	// Helper function to get responsive background values with proper fallback
+	const getResponsiveBackgroundValue = (attribute, device = '') => {
+		let devicePrefix = device;
+		if (!devicePrefix) {
+			// For save, we need to determine which values to use
+			// Priority: Desktop -> Tablet -> Mobile -> Base
+			const dValue = attributes[`d${attribute.charAt(0).toUpperCase()}${attribute.slice(1)}`];
+			const tValue = attributes[`t${attribute.charAt(0).toUpperCase()}${attribute.slice(1)}`];
+			const mValue = attributes[`m${attribute.charAt(0).toUpperCase()}${attribute.slice(1)}`];
+			const baseValue = attributes[attribute];
+			
+			// Use desktop value if available, otherwise fallback chain
+			return dValue !== '' && dValue !== undefined ? dValue : 
+				   tValue !== '' && tValue !== undefined ? tValue :
+				   mValue !== '' && mValue !== undefined ? mValue :
+				   baseValue;
+		}
+		
+		const deviceValue = attributes[`${devicePrefix}${attribute.charAt(0).toUpperCase()}${attribute.slice(1)}`];
+		const baseValue = attributes[attribute];
+		return deviceValue !== '' && deviceValue !== undefined ? deviceValue : baseValue;
+	};
+
+	// Get responsive background values (prioritize desktop for save)
+	const backgroundType = getResponsiveBackgroundValue('backgroundType') || 'none';
+	const backgroundColorSlug = getResponsiveBackgroundValue('backgroundColorSlug') || '';
+	const backgroundGradientSlug = getResponsiveBackgroundValue('backgroundGradientSlug') || '';
+	const backgroundImage = getResponsiveBackgroundValue('backgroundImage') || '';
+	const backgroundWidth = getResponsiveBackgroundValue('backgroundWidth') || 'main';
+	const backgroundRepeat = getResponsiveBackgroundValue('backgroundRepeat') || 'no';
+	const backgroundSize = getResponsiveBackgroundValue('backgroundSize') || 'cover';
+	const backgroundSizeX = getResponsiveBackgroundValue('backgroundSizeX') || '100%';
+	const backgroundSizeY = getResponsiveBackgroundValue('backgroundSizeY') || '100%';
+	const backgroundPosition = getResponsiveBackgroundValue('backgroundPosition') || 'center';
+	const backgroundPositionX = getResponsiveBackgroundValue('backgroundPositionX') || '50';
+	const backgroundPositionY = getResponsiveBackgroundValue('backgroundPositionY') || '50';
 
 	const paddingClasses = [];
 	if (gridPadding.desktop && !gridPadding.desktop.startsWith('c-')) paddingClasses.push(`d-pad-vert-${gridPadding.desktop}`);
@@ -79,11 +111,18 @@ const save = ({ attributes }) => {
 			<div {...blockProps}>
 				<GridBackground
 					clientId={uniqueId}
-					backgroundType={backgroundType || 'none'}
-					backgroundColorSlug={backgroundColorSlug || ''}
-					backgroundGradientSlug={backgroundGradientSlug || ''}
-					backgroundImage={backgroundImage || ''}
-					backgroundWidth={backgroundWidth || 'main'}
+					backgroundType={backgroundType}
+					backgroundColorSlug={backgroundColorSlug}
+					backgroundGradientSlug={backgroundGradientSlug}
+					backgroundImage={backgroundImage}
+					backgroundWidth={backgroundWidth}
+					backgroundRepeat={backgroundRepeat}
+					backgroundSize={backgroundSize}
+					backgroundSizeX={backgroundSizeX}
+					backgroundSizeY={backgroundSizeY}
+					backgroundPosition={backgroundPosition}
+					backgroundPositionX={backgroundPositionX}
+					backgroundPositionY={backgroundPositionY}
 					isEditor={false}
 					maxRowClasses={maxRowClasses}
 				/>
